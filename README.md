@@ -4,25 +4,42 @@ Project Structure:
     │   ├── CMakeLists.txt
     │   ├── include
     │   │   └── calculator
+    │   │       ├── common.hpp
+    │   │       ├── function.hpp
+    │   │       └── marco.hpp
     │   ├── package.xml
     │   └── src
+    │       └── function.cpp
+    ├── interfaces
+    │   ├── CMakeLists.txt
+    │   ├── package.xml
+    │   └── srv
+    │       ├── GetTask.srv
+    │       └── NewRobot.srv
     ├── manager
     │   ├── CMakeLists.txt
     │   ├── include
     │   │   └── manager
-    │   │       └── manager.hpp
+    │   │       ├── manager.hpp
+    │   │       └── manager_interfaces.hpp
     │   ├── package.xml
     │   └── src
     │       ├── manager.cpp
-    │       └── nodeStart.cpp
+    │       └── manager_node_start.cpp
+    ├── README.md
     ├── robot_control
     │   ├── CMakeLists.txt
     │   ├── include
     │   │   └── robot_control
+    │   │       ├── control.hpp
+    │   │       └── robot_interfaces.hpp
     │   ├── package.xml
     │   └── src
+    │       ├── control.cpp
+    │       └── robot_node_start.cpp
     └── robot_description
         ├── launch
+        │   └── robot.launch.py
         ├── package.xml
         ├── resource
         │   └── robot_description
@@ -35,6 +52,11 @@ Project Structure:
         │   ├── test_flake8.py
         │   └── test_pep257.py
         ├── urdf
+        │   ├── robot_0.urdf
+        │   ├── robot_1.urdf
         │   └── robot.urdf
         └── world
-└── README.md
+            ├── garage.world
+            ├── hard.world
+            ├── house.world
+            └── shopping_mall.world
