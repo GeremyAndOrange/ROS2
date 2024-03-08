@@ -1,0 +1,5 @@
+bool is_create
+float32 gen_x
+float32 gen_y
+---
+uint32 id

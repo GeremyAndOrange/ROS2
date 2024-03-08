@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "${default}",
+                "limitSymbolsToIncludedHeaders": false
+            },
+            "includePath": [
+                "/opt/ros/galactic/include/**",
+                "/home/glj/robot/install/**",
+                "/home/glj/robot/src/calculator/include/**",
+                "/home/glj/robot/src/manager/include/**",
+                "/home/glj/robot/src/robot_control/include/**",
+                "/usr/include/**",
+                "${workspaceFolder}"
+            ],
+            "name": "ROS",
+            "intelliSenseMode": "gcc-x64",
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu11",
+            "cppStandard": "c++14"
+        }
+    ],
+    "version": 4
+}
