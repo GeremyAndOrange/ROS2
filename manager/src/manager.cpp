@@ -19,7 +19,7 @@ ManagerNode::ManagerNode(std::string name) : Node(name)
 
     // debug
     this->debug = this->create_publisher<nav_msgs::msg::OccupancyGrid>("map",10);
-    this->debugTimer = this->create_wall_timer(std::chrono::milliseconds(500),std::bind(&ManagerNode::pub,this));
+    this->debugTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&ManagerNode::pub,this));
 }
 
 void ManagerNode::NewRobot(const interfaces::srv::NewRobot::Request::SharedPtr request, const interfaces::srv::NewRobot::Response::SharedPtr response)
@@ -95,7 +95,7 @@ void ManagerNode::SubLocalMap(const nav_msgs::msg::OccupancyGrid info)
         if (delta_y <= 0)
         {
             this->map.map.insert(this->map.map.begin(), -delta_y, std::deque<int>(this->map.map[0].size(), -1));
-            this->map.origin.x = info.info.origin.position.x;
+            this->map.origin.y = info.info.origin.position.y;
             delta_y = 0;
         }
         else
@@ -111,16 +111,17 @@ void ManagerNode::SubLocalMap(const nav_msgs::msg::OccupancyGrid info)
             {
                 row.insert(row.begin(), -delta_x, -1);
             }
-            this->map.origin.y = info.info.origin.position.y;
+            this->map.origin.x = info.info.origin.position.x;
             delta_x = 0;
         }
         else
         {
             if (delta_x + MAP_LENGTH > int(this->map.map[0].size()))
             {
+                int old_length = int(this->map.map[0].size());
                 for (auto& row : this->map.map)
                 {
-                    row.insert(row.end(), delta_x + MAP_LENGTH - int(this->map.map[0].size()), -1);
+                    row.insert(row.end(), delta_x + MAP_LENGTH - old_length, -1);
                 }
             }
         }
@@ -134,7 +135,14 @@ void ManagerNode::UpdateMap(const nav_msgs::msg::OccupancyGrid info, int start_x
     {
         for (int j = 0; j < MAP_LENGTH; ++j)
         {
-            this->map.map[start_y + i][start_x + j] = info.data[i * MAP_LENGTH + j];
+            if ((this->map.map[start_y + i][start_x + j] == 0 || this->map.map[start_y + i][start_x + j] == 100) && info.data[i * MAP_LENGTH + j] == -1)
+            {
+                continue;
+            }
+            else
+            {
+                this->map.map[start_y + i][start_x + j] = info.data[i * MAP_LENGTH + j];
+            }
         }
     }
 }
@@ -148,8 +156,8 @@ void ManagerNode::pub()
             flat_map.push_back(static_cast<int8_t>(val));
         }
     }
-    info.info.height = this->map.map[0].size();
-    info.info.width = this->map.map.size();
+    info.info.height = this->map.map.size();
+    info.info.width = this->map.map[0].size();
     info.info.resolution = MAP_RESOLUTION;
     info.info.origin.position.x = this->map.origin.x;
     info.info.origin.position.y = this->map.origin.y;

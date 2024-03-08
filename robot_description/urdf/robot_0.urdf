@@ -165,8 +165,8 @@
       <axis xyz="0 1 0" />
   </joint>
 
-  <!-- caster link -->
-  <link name="caster_link">
+  <!-- fornt caster link -->
+  <link name="front_caster_link">
       <visual>
         <origin xyz="0 0 0" rpy="1.57079 0 0"/>
         <geometry>
@@ -191,19 +191,64 @@
     </inertial>
   </link>
 
-  <!-- caster joint -->
-  <joint name="caster_joint" type="fixed">
+  <!-- front caster joint -->
+  <joint name="front_caster_joint" type="fixed">
       <parent link="base_link" />
-      <child link="caster_link" />
+      <child link="front_caster_link" />
       <origin xyz="0.06 0.0 -0.076" />
       <axis xyz="0 1 0" />
   </joint>
 
-  <gazebo reference="caster_link">
+  <gazebo reference="front_caster_link">
     <material>Gazebo/Black</material>
   </gazebo>
 
-  <gazebo reference="caster_link">
+  <gazebo reference="front_caster_link">
+    <mu1 value="0.0"/>
+    <mu2 value="0.0"/>
+    <kp value="1000000.0" />
+    <kd value="10.0" />
+  </gazebo>
+
+<!-- after caster link -->
+  <link name="after_caster_link">
+      <visual>
+        <origin xyz="0 0 0" rpy="1.57079 0 0"/>
+        <geometry>
+            <sphere radius="0.016"/>
+        </geometry>
+          <material name="black">
+            <color rgba="0.0 0.0 0.0 0.5" /> 
+          </material>
+      </visual>
+      <collision>
+        <origin xyz="0 0 0" rpy="1.57079 0 0"/>
+        <geometry>
+            <sphere radius="0.016"/>
+        </geometry>
+          <material name="black">
+            <color rgba="0.0 0.0 0.0 0.5" /> 
+          </material>
+      </collision>
+      <inertial>
+      <mass value="0.02"/>
+      <inertia ixx="0.000190416666667" ixy="0" ixz="0" iyy="0.0001904" iyz="0" izz="0.00036"/>
+    </inertial>
+  </link>
+
+  <!-- after caster joint -->
+  <joint name="after_caster_joint" type="fixed">
+      <parent link="base_link" />
+      <child link="after_caster_link" />
+      <origin xyz="-0.06 0.0 -0.076" />
+      <axis xyz="0 1 0" />
+  </joint>
+
+  <gazebo reference="after_caster_link">
+    <material>Gazebo/Black</material>
+  </gazebo>
+
+  <gazebo reference="after_caster_link">
     <mu1 value="0.0"/>
     <mu2 value="0.0"/>
     <kp value="1000000.0" />
@@ -309,7 +354,7 @@
       <sensor name="laser_sensor" type="ray">
       <always_on>true</always_on>
       <visualize>true</visualize>
-      <update_rate>10</update_rate>
+      <update_rate>500</update_rate>
       <pose>0 0 0.075 0 0 0</pose>
       <ray>
           <scan>

@@ -20,7 +20,7 @@ RobotNode::RobotNode(std::string name) : Node(name)
     this->SubscriptionLidarInfo = this->create_subscription<sensor_msgs::msg::LaserScan>("robot_" + this->id + "/scan", rclcpp::QoS(10).reliability(rclcpp::ReliabilityPolicy::BestEffort), std::bind(&RobotNode::SublidarInfo,this,_1));
     // timer
     this->CheckStateTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::CheckState,this));
-    this->LocalMapBuildTimer = this->create_wall_timer(std::chrono::milliseconds(1000),std::bind(&RobotNode::LocalMapBuild,this));
+    this->LocalMapBuildTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::LocalMapBuild,this));
 }
 
 void RobotNode::SubOdomInfo(const nav_msgs::msg::Odometry::SharedPtr info)
@@ -142,7 +142,7 @@ void RobotNode::LocalMapBuild()
             float coor_x = int(j-MAP_LENGTH/2) * MAP_RESOLUTION;
             float coor_y = int(i-MAP_LENGTH/2) * MAP_RESOLUTION;
             float coor_theta = atan2(coor_y,coor_x);
-            int cal_theta = int((coor_theta + GetRPY(this->quaternion).yaw)*(180.0/M_PI));
+            int cal_theta = int((coor_theta - GetRPY(this->quaternion).yaw)*(180.0/M_PI));
             cal_theta = cal_theta < 0 ? (cal_theta%360 + 360) : cal_theta%360;
             float distance = sqrt((pow(coor_x,2) + pow(coor_y,2)));
             int index = i * MAP_LENGTH + j;
