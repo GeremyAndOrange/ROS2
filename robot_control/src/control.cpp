@@ -10,15 +10,19 @@ RobotNode::RobotNode(std::string name) : Node(name)
 
     // parameter
     this->state = 2;
+    this->left_wheel_postion = 0.0;
+    this->right_wheel_position = 0.0;
 
     // service
     this->TaskService = this->create_client<interfaces::srv::GetTask>("get_task");
 
     // topic
+    this->PublisherJointState = this->create_publisher<sensor_msgs::msg::JointState>("joint_states",10);
     this->SubscriptionOdomInfo = this->create_subscription<nav_msgs::msg::Odometry>("odom",10,std::bind(&RobotNode::SubOdomInfo,this,_1));
-    
+
     // timer
     this->CheckStateTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::CheckState,this));
+    this->JointStateTImer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::PubJointState,this));
 }
 
 void RobotNode::SubOdomInfo(const nav_msgs::msg::Odometry::SharedPtr info)
@@ -103,4 +107,34 @@ void RobotNode::GetTaskCallBack(rclcpp::Client<interfaces::srv::GetTask>::Shared
         coordinate.z = 0;
         this->path.push_back(coordinate);
     }
+}
+
+void RobotNode::PubJointState()
+{
+    sensor_msgs::msg::JointState info;
+    info.header.stamp = this->now();
+    info.header.frame_id = "";
+    info.name.push_back("left_wheel_joint");
+    info.name.push_back("right_wheel_joint");
+    if (this->path.empty())
+    {
+        info.velocity.push_back(0.0);
+        info.velocity.push_back(0.0);
+        info.position.push_back(this->left_wheel_postion);
+        info.position.push_back(this->right_wheel_position);
+    }
+    else
+    {
+        Speed speed = CalSpeed(this->position,this->path[0],this->quaternion);
+        double linear_speed = sqrt(pow(speed.linear[0],2) + pow(speed.linear[1],2));
+        double angular_speed = speed.angular * DISTANCE_WHEEL / 2;
+        info.velocity.push_back(linear_speed - angular_speed);
+        info.velocity.push_back(linear_speed + angular_speed);
+        this->left_wheel_postion += info.velocity[0] * (1/50);
+        this->right_wheel_position += info.velocity[1] * (1/50);
+        info.position.push_back(this->left_wheel_postion);
+        info.position.push_back(this->right_wheel_position);
+
+    }
+    this->PublisherJointState->publish(info);
 }

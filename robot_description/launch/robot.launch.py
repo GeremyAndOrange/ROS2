@@ -10,6 +10,7 @@ def generate_launch_description():
     start_y = LaunchConfiguration('y', default=0.)
     robot_id = LaunchConfiguration('robot_id', default='0')
     robot_name = LaunchConfiguration('robot_name', default='robot')
+    use_sim_time = LaunchConfiguration('use_sim_time', default='true')
 
     launch_description = LaunchDescription()
     package_name = 'robot_description'
@@ -20,7 +21,10 @@ def generate_launch_description():
         namespace = robot_name,
         executable='robot_node',
         name = 'control',
-        parameters = [{'id': robot_id}]
+        parameters = [
+            {'id': robot_id},
+            {'use_sim_time': use_sim_time}
+        ]
     )
 
     xacro_file = os.path.join(package_share, 'urdf/robot.urdf.xacro')
@@ -44,20 +48,17 @@ def generate_launch_description():
         ]
     )
 
-    # joint_state_publisher_node = Node(
-    #     package = 'joint_state_publisher_gui',
-    #     namespace = robot_name,
-    #     executable = 'joint_state_publisher_gui',
-    #     name = 'joint_state_publisher_gui',
-    #     arguments = [urdf_file]
-    #     )
-
+    with open(urdf_file, 'r') as inf:
+        robot_description = inf.read()
     robot_state_publisher_node = Node(
         package = 'robot_state_publisher',
         namespace = robot_name,
         executable = 'robot_state_publisher',
         name = 'robot_state_publisher',
-        arguments = [urdf_file]
+        parameters = [
+            {'robot_description': robot_description},
+            {'use_sim_time': use_sim_time}
+        ]
         )
 
     cartographer_share = os.path.join(package_share, 'cartographer_config')
@@ -78,7 +79,6 @@ def generate_launch_description():
 
     resolution = LaunchConfiguration('resolution', default='0.05')
     publish_persec = LaunchConfiguration('publish_persec', default='1.0')
-    use_sim_time = LaunchConfiguration('use_sim_time', default='true')
     occupancy_grid_node = Node(
         package = 'cartographer_ros',
         executable = 'occupancy_grid_node',
@@ -92,8 +92,7 @@ def generate_launch_description():
 
     launch_description.add_action(robot_node)
     launch_description.add_action(xacro_command)
-    # launch_description.add_action(spawn_node)
-    # launch_description.add_action(joint_state_publisher_node)
+    launch_description.add_action(spawn_node)
     launch_description.add_action(robot_state_publisher_node)
     # launch_description.add_action(cartographer_node)
     # launch_description.add_action(occupancy_grid_node)

@@ -12,6 +12,7 @@
 #define PRECISION_4 0.0001
 #define ANGULAR_SPEED_MAX 3.0
 #define LINEAR_SPEED_MIN 0.5
+#define DISTANCE_WHEEL 0.2                      // base_link直径,轮距
 
 // SENSOR DEFINE
 

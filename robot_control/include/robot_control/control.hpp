@@ -20,6 +20,8 @@ public:
     void CheckState();
     // 运动控制
     void PubMotionControl(const int state);
+    // 关节数据
+    void PubJointState();
 
 private:
     // parameter
@@ -28,16 +30,20 @@ private:
     Coordinate position;
     Quaternion quaternion;
     std::vector<Coordinate> path;
+    double left_wheel_postion;
+    double right_wheel_position;
 
     // service
     rclcpp::Client<interfaces::srv::GetTask>::SharedPtr TaskService;
 
     // topic
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr PublisherMotionControl;
+    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr PublisherJointState;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr SubscriptionOdomInfo;
 
     // timer
     rclcpp::TimerBase::SharedPtr CheckStateTimer;
+    rclcpp::TimerBase::SharedPtr JointStateTImer;
 };
 
 #endif
