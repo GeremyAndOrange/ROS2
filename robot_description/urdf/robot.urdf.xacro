@@ -1,5 +1,6 @@
 <?xml version="1.0"?>
-<robot name="car_robot">
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="$(arg robot_name)">
+  <xacro:arg name="robot_name" default="robot"/>
 
   <!-- Robot Footprint -->
   <link name="base_footprint"/>
@@ -13,22 +14,22 @@
 
   <!-- base link -->
   <link name="base_link">
-  	<visual>
+    <visual>
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>
-		<cylinder length="0.12" radius="0.10"/>
+    <cylinder length="0.12" radius="0.10"/>
       </geometry>
       <material name="blue">
-      	<color rgba="0.1 0.1 1.0 0.5" /> 
+        <color rgba="0.1 0.1 1.0 0.5" />
       </material>
     </visual>
     <collision>
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>
-		<cylinder length="0.12" radius="0.10"/>
+    <cylinder length="0.12" radius="0.10"/>
       </geometry>
       <material name="blue">
-      	<color rgba="0.1 0.1 1.0 0.5" /> 
+        <color rgba="0.1 0.1 1.0 0.5" />
       </material>
     </collision>
     <inertial>
@@ -45,7 +46,7 @@
         <cylinder length="0.02" radius="0.02"/>
       </geometry>
       <material name="black">
-        <color rgba="0.0 0.0 0.0 0.5" /> 
+        <color rgba="0.0 0.0 0.0 0.5" />
       </material>
     </visual>
     <collision>
@@ -54,7 +55,7 @@
         <cylinder length="0.02" radius="0.02"/>
       </geometry>
       <material name="black">
-        <color rgba="0.0 0.0 0.0 0.5" /> 
+        <color rgba="0.0 0.0 0.0 0.5" />
       </material>
     </collision>
     <inertial>
@@ -72,16 +73,16 @@
 
   <!-- imu link -->
   <link name="imu_link">
-  	<visual>
+    <visual>
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>
-		    <box size="0.02 0.02 0.02"/>
+        <box size="0.02 0.02 0.02"/>
       </geometry>
     </visual>
     <collision>
       <origin xyz="0 0 0.0" rpy="0 0 0"/>
       <geometry>
-		    <box size="0.02 0.02 0.02"/>
+        <box size="0.02 0.02 0.02"/>
       </geometry>
     </collision>
     <inertial>
@@ -105,7 +106,7 @@
           <cylinder length="0.04" radius="0.032"/>
         </geometry>
           <material name="black">
-            <color rgba="0.0 0.0 0.0 0.5" /> 
+            <color rgba="0.0 0.0 0.0 0.5" />
           </material>
       </visual>
       <collision>
@@ -114,7 +115,7 @@
           <cylinder length="0.04" radius="0.032"/>
         </geometry>
           <material name="black">
-            <color rgba="0.0 0.0 0.0 0.5" /> 
+            <color rgba="0.0 0.0 0.0 0.5" />
           </material>
       </collision>
       <inertial>
@@ -123,7 +124,7 @@
         </inertial>
   </link>
 
-  <!-- right_wheellink -->
+  <!-- right_wheel link -->
   <link name="right_wheel_link">
       <visual>
         <origin xyz="0 0 0" rpy="1.57079 0 0"/>
@@ -131,7 +132,7 @@
           <cylinder length="0.04" radius="0.032"/>
         </geometry>
           <material name="black">
-            <color rgba="0.0 0.0 0.0 0.5" /> 
+            <color rgba="0.0 0.0 0.0 0.5" />
           </material>
       </visual>
       <collision>
@@ -140,7 +141,7 @@
           <cylinder length="0.04" radius="0.032"/>
         </geometry>
           <material name="black">
-            <color rgba="0.0 0.0 0.0 0.5" /> 
+            <color rgba="0.0 0.0 0.0 0.5" />
           </material>
       </collision>
       <inertial>
@@ -173,7 +174,7 @@
             <sphere radius="0.016"/>
         </geometry>
           <material name="black">
-            <color rgba="0.0 0.0 0.0 0.5" /> 
+            <color rgba="0.0 0.0 0.0 0.5" />
           </material>
       </visual>
       <collision>
@@ -182,7 +183,7 @@
             <sphere radius="0.016"/>
         </geometry>
           <material name="black">
-            <color rgba="0.0 0.0 0.0 0.5" /> 
+            <color rgba="0.0 0.0 0.0 0.5" />
           </material>
       </collision>
       <inertial>
@@ -218,7 +219,7 @@
             <sphere radius="0.016"/>
         </geometry>
           <material name="black">
-            <color rgba="0.0 0.0 0.0 0.5" /> 
+            <color rgba="0.0 0.0 0.0 0.5" />
           </material>
       </visual>
       <collision>
@@ -227,7 +228,7 @@
             <sphere radius="0.016"/>
         </geometry>
           <material name="black">
-            <color rgba="0.0 0.0 0.0 0.5" /> 
+            <color rgba="0.0 0.0 0.0 0.5" />
           </material>
       </collision>
       <inertial>
@@ -256,9 +257,9 @@
   </gazebo>
 
   <gazebo>
-    <plugin name='diff_drive' filename='libgazebo_ros_diff_drive.so'>
+    <plugin name="diff_drive" filename="libgazebo_ros_diff_drive.so">
           <ros>
-            <namespace>/</namespace>
+            <namespace>/$(arg robot_name)</namespace>
             <remapping>cmd_vel:=cmd_vel</remapping>
             <remapping>odom:=odom</remapping>
           </ros>
@@ -285,7 +286,7 @@
     <sensor name="imu_sensor" type="imu">
     <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
         <ros>
-          <namespace>/</namespace>
+          <namespace>/$(arg robot_name)</namespace>
           <remapping>~/out:=imu</remapping>
         </ros>
         <initial_orientation_as_reference>false</initial_orientation_as_reference>
@@ -379,6 +380,7 @@
 
       <plugin name="laserscan" filename="libgazebo_ros_ray_sensor.so">
         <ros>
+          <namespace>/$(arg robot_name)</namespace>
           <remapping>~/out:=scan</remapping>
         </ros>
         <output_type>sensor_msgs/LaserScan</output_type>

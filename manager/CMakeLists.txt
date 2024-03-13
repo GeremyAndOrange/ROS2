@@ -8,7 +8,6 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
-find_package(nav_msgs REQUIRED)
 find_package(interfaces REQUIRED)
 find_package(calculator REQUIRED)
 
@@ -36,7 +35,6 @@ ament_target_dependencies(manager_node
   rclcpp
   interfaces
   calculator
-  nav_msgs
   )
 
 install(TARGETS
