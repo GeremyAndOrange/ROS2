@@ -61,7 +61,11 @@ def generate_launch_description():
             '-configuration_basename', cartohrapher_config
         ],
         remappings = [
-            ('submap_list','/submap_list')
+            ('submap_list','/submap_list'),
+            ('submap_query','/submap_query')
+        ],
+        parameters = [
+            {'use_sim_time': True}
         ]
     )
     
@@ -69,6 +73,5 @@ def generate_launch_description():
     launch_description.add_action(spawn_node)
     launch_description.add_action(robot_state_publisher_node)
     launch_description.add_action(cartographer_node)
-    # launch_description.add_action(occupancy_grid_node)
 
     return launch_description

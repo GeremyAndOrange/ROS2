@@ -9,8 +9,8 @@ ManagerNode::ManagerNode(std::string name) : Node(name)
     this->number = 0;
 
     // service
-    this->new_robot_service = this->create_service<interfaces::srv::NewRobot>("new_robot_service",std::bind(&ManagerNode::NewRobot,this,_1,_2));
-    this->send_task_service = this->create_service<interfaces::srv::GetTask>("get_task",std::bind(&ManagerNode::SendTask,this,_1,_2));
+    this->new_robot_service = this->create_service<interfaces::srv::NewRobot>("/new_robot_service",std::bind(&ManagerNode::NewRobot,this,_1,_2));
+    this->send_task_service = this->create_service<interfaces::srv::GetTask>("/get_task",std::bind(&ManagerNode::SendTask,this,_1,_2));
 
     // topic
     

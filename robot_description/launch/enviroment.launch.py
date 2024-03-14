@@ -37,6 +37,6 @@ def generate_launch_description():
     )
 
     launch_description.add_action(start_gazebo_cmd)
-    # launch_description.add_action(occupancy_grid_node)
+    launch_description.add_action(occupancy_grid_node)
 
     return launch_description

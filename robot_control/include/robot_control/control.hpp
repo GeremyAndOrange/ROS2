@@ -13,13 +13,13 @@ public:
     // 获取里程计信息
     void SubOdomInfo(const nav_msgs::msg::Odometry::SharedPtr info);
     // 请求任务/发送自身位置
-    void GetTask(const int type);
+    void GetTask(int type);
     // 请求任务回调函数
     void GetTaskCallBack(rclcpp::Client<interfaces::srv::GetTask>::SharedFuture response);
     // 状态检测函数
     void CheckState();
     // 运动控制
-    void PubMotionControl(const int state);
+    void PubMotionControl(int state);
     // 关节数据
     void PubJointState();
 

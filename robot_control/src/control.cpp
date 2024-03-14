@@ -15,7 +15,7 @@ RobotNode::RobotNode(std::string name) : Node(name)
     this->right_wheel_position = 0.0;
 
     // service
-    this->TaskService = this->create_client<interfaces::srv::GetTask>("get_task");
+    this->TaskService = this->create_client<interfaces::srv::GetTask>("/get_task");
 
     // topic
     this->PublisherJointState = this->create_publisher<sensor_msgs::msg::JointState>("joint_states",10);
@@ -38,9 +38,9 @@ void RobotNode::SubOdomInfo(const nav_msgs::msg::Odometry::SharedPtr info)
     this->quaternion.w = info->pose.pose.orientation.w;
 }
 
-void RobotNode::PubMotionControl(const int state)
+void RobotNode::PubMotionControl(int state)
 {
-    if (state != 1 || state != 0) return;
+    if (state != 1 && state != 0) return;
     Speed speed = CalSpeed(this->position,this->path[0],this->quaternion);
     geometry_msgs::msg::Twist info;
     info.angular.z = speed.angular * state;
@@ -85,7 +85,7 @@ void RobotNode::CheckState()
     }
 }
 
-void RobotNode::GetTask(const int type)
+void RobotNode::GetTask(int type)
 {
     // type {0: GetTask(), 1: SendPosition()}
     auto request = std::make_shared<interfaces::srv::GetTask_Request>();
@@ -93,8 +93,8 @@ void RobotNode::GetTask(const int type)
     request->id = std::stoi(this->id);
     request->x = this->position.x;
     request->y = this->position.y;
-    if (type == 1) this->TaskService->async_send_request(request,std::bind(&RobotNode::GetTaskCallBack,this,_1));
-    if (type == 0) this->TaskService->async_send_request(request);
+    if (type == 0) this->TaskService->async_send_request(request,std::bind(&RobotNode::GetTaskCallBack,this,_1));
+    if (type == 1) this->TaskService->async_send_request(request);
 }
 
 void RobotNode::GetTaskCallBack(rclcpp::Client<interfaces::srv::GetTask>::SharedFuture response)
