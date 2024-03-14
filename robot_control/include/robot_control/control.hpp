@@ -26,6 +26,7 @@ public:
 private:
     // parameter
     std::string id;
+    std::string name;
     unsigned int state;     // {1:working,2:relaxing,3:outline}
     Coordinate position;
     Quaternion quaternion;

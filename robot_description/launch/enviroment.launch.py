@@ -1,7 +1,7 @@
 import os
 from launch_ros.actions import Node
 from launch import LaunchDescription
-from launch.substitutions import LaunchConfiguration,PythonExpression
+from launch.substitutions import LaunchConfiguration
 from launch.actions import ExecuteProcess
 from launch_ros.substitutions import FindPackageShare
 
@@ -16,7 +16,13 @@ def generate_launch_description():
 
     gazebo_world_path = os.path.join(package_share, 'world/hard.world')
     start_gazebo_cmd = ExecuteProcess(
-        cmd = ['gazebo', '--verbose', '-s', 'libgazebo_ros_factory.so', gazebo_world_path],
+        cmd = [
+            'gazebo',
+            '--verbose',
+            '-s', 'libgazebo_ros_factory.so',
+            '-s', 'libgazebo_ros_init.so',
+             gazebo_world_path
+        ],
     )
 
     occupancy_grid_node = Node(

@@ -34,15 +34,17 @@ void ManagerNode::NewRobot(const interfaces::srv::NewRobot::Request::SharedPtr r
                 break;
             }
         }
-        
+        // update urdf file
+        std::string urdf_command = "ros2 launch robot_description urdf.launch.py robot_name:=robot_" + std::to_string(response->id);
+        int result = std::system(urdf_command.c_str());
+        RCLCPP_INFO(this->get_logger(), "Update urdf file result: %d",result);
         // create new robot
-        std::string robot_command = "ros2 launch robot_description robot.launch.py robot_id:=\"'" + std::to_string(response->id) + "'\""
-                                  + " robot_name:=robot_" + std::to_string(response->id)
+        std::string robot_command = "ros2 launch robot_description robot.launch.py robot_name:=robot_" + std::to_string(response->id)
                                   + " x:=" + std::to_string(request->gen_x)
                                   + " y:=" + std::to_string(request->gen_y)
                                   + " &";
-        int result = std::system(robot_command.c_str());
-        RCLCPP_INFO(this->get_logger(), "Created Robot Result: %d",result);
+        result = std::system(robot_command.c_str());
+        RCLCPP_INFO(this->get_logger(), "Created robot result: %d",result);
     }
 }
 

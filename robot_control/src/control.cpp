@@ -4,8 +4,9 @@
 RobotNode::RobotNode(std::string name) : Node(name)
 {
     // get id
-    this->declare_parameter<std::string>("id", "-1");
-    this->id = this->get_parameter("id").as_string();
+    this->declare_parameter<std::string>("name", "robot");
+    this->name = this->get_parameter("name").as_string();
+    if (this->name.find('_') != std::string::npos) this->id = this->name.substr(this->name.find('_') + 1);
     RCLCPP_INFO(this->get_logger(), ("This is robot_" + this->id).c_str());
 
     // parameter
@@ -112,7 +113,7 @@ void RobotNode::GetTaskCallBack(rclcpp::Client<interfaces::srv::GetTask>::Shared
 void RobotNode::PubJointState()
 {
     sensor_msgs::msg::JointState info;
-    info.header.stamp = this->now();
+    info.header.stamp = this->get_clock()->now();
     info.header.frame_id = "";
     info.name.push_back("left_wheel_joint");
     info.name.push_back("right_wheel_joint");
