@@ -3,9 +3,9 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="$(arg robot_name)">  
   <xacro:arg name="robot_name" default="robot"/>  
   <!-- Robot Footprint -->  
-  <link name="base_footprint"/>  
+  <link name="$(arg robot_name)_base_footprint"/>  
   <!-- base link -->  
-  <link name="base_link"> 
+  <link name="$(arg robot_name)_base_link"> 
     <visual> 
       <origin xyz="0 0 0.0" rpy="0 0 0"/>  
       <geometry> 
@@ -30,13 +30,13 @@
     </inertial> 
   </link>  
   <!-- base joint -->  
-  <joint name="base_joint" type="fixed"> 
-    <parent link="base_footprint"/>  
-    <child link="base_link"/>  
+  <joint name="$(arg robot_name)_base_joint" type="fixed"> 
+    <parent link="$(arg robot_name)_base_footprint"/>  
+    <child link="$(arg robot_name)_base_link"/>  
     <origin xyz="0.0 0.0 0.076" rpy="0 0 0"/> 
   </joint>  
   <!-- laser link -->  
-  <link name="laser_link"> 
+  <link name="$(arg robot_name)_laser_link"> 
     <visual> 
       <origin xyz="0 0 0" rpy="0 0 0"/>  
       <geometry> 
@@ -61,13 +61,13 @@
     </inertial> 
   </link>  
   <!-- laser joint -->  
-  <joint name="laser_joint" type="fixed"> 
-    <parent link="base_link"/>  
-    <child link="laser_link"/>  
+  <joint name="$(arg robot_name)_laser_joint" type="fixed"> 
+    <parent link="$(arg robot_name)_base_link"/>  
+    <child link="$(arg robot_name)_laser_link"/>  
     <origin xyz="0 0 0.075"/> 
   </joint>  
   <!-- imu link -->  
-  <link name="imu_link"> 
+  <link name="$(arg robot_name)_imu_link"> 
     <visual> 
       <origin xyz="0 0 0.0" rpy="0 0 0"/>  
       <geometry> 
@@ -86,13 +86,13 @@
     </inertial> 
   </link>  
   <!-- imu joint -->  
-  <joint name="imu_joint" type="fixed"> 
-    <parent link="base_link"/>  
-    <child link="imu_link"/>  
+  <joint name="$(arg robot_name)_imu_joint" type="fixed"> 
+    <parent link="$(arg robot_name)_base_link"/>  
+    <child link="$(arg robot_name)_imu_link"/>  
     <origin xyz="0 0 0.02"/> 
   </joint>  
   <!-- left_wheel link -->  
-  <link name="left_wheel_link"> 
+  <link name="$(arg robot_name)_left_wheel_link"> 
     <visual> 
       <origin xyz="0 0 0" rpy="1.57079 0 0"/>  
       <geometry> 
@@ -117,14 +117,14 @@
     </inertial> 
   </link>  
   <!-- left_wheel joint -->  
-  <joint name="left_wheel_joint" type="continuous"> 
-    <parent link="base_link"/>  
-    <child link="left_wheel_link"/>  
+  <joint name="$(arg robot_name)_left_wheel_joint" type="continuous"> 
+    <parent link="$(arg robot_name)_base_link"/>  
+    <child link="$(arg robot_name)_left_wheel_link"/>  
     <origin xyz="-0.02 0.10 -0.06"/>  
     <axis xyz="0 1 0"/> 
   </joint>  
   <!-- right_wheel link -->  
-  <link name="right_wheel_link"> 
+  <link name="$(arg robot_name)_right_wheel_link"> 
     <visual> 
       <origin xyz="0 0 0" rpy="1.57079 0 0"/>  
       <geometry> 
@@ -149,14 +149,14 @@
     </inertial> 
   </link>  
   <!-- right_wheel joint -->  
-  <joint name="right_wheel_joint" type="continuous"> 
-    <parent link="base_link"/>  
-    <child link="right_wheel_link"/>  
+  <joint name="$(arg robot_name)_right_wheel_joint" type="continuous"> 
+    <parent link="$(arg robot_name)_base_link"/>  
+    <child link="$(arg robot_name)_right_wheel_link"/>  
     <origin xyz="-0.02 -0.10 -0.06"/>  
     <axis xyz="0 1 0"/> 
   </joint>  
   <!-- fornt caster link -->  
-  <link name="front_caster_link"> 
+  <link name="$(arg robot_name)_front_caster_link"> 
     <visual> 
       <origin xyz="0 0 0" rpy="1.57079 0 0"/>  
       <geometry> 
@@ -181,23 +181,23 @@
     </inertial> 
   </link>  
   <!-- front caster joint -->  
-  <joint name="front_caster_joint" type="fixed"> 
-    <parent link="base_link"/>  
-    <child link="front_caster_link"/>  
+  <joint name="$(arg robot_name)_front_caster_joint" type="fixed"> 
+    <parent link="$(arg robot_name)_base_link"/>  
+    <child link="$(arg robot_name)_front_caster_link"/>  
     <origin xyz="0.06 0.0 -0.076"/>  
     <axis xyz="0 1 0"/> 
   </joint>  
-  <gazebo reference="front_caster_link"> 
+  <gazebo reference="$(arg robot_name)_front_caster_link"> 
     <material>Gazebo/Black</material> 
   </gazebo>  
-  <gazebo reference="front_caster_link"> 
+  <gazebo reference="$(arg robot_name)_front_caster_link"> 
     <mu1 value="0.0"/>  
     <mu2 value="0.0"/>  
     <kp value="1000000.0"/>  
     <kd value="10.0"/> 
   </gazebo>  
   <!-- after caster link -->  
-  <link name="after_caster_link"> 
+  <link name="$(arg robot_name)_after_caster_link"> 
     <visual> 
       <origin xyz="0 0 0" rpy="1.57079 0 0"/>  
       <geometry> 
@@ -222,16 +222,16 @@
     </inertial> 
   </link>  
   <!-- after caster joint -->  
-  <joint name="after_caster_joint" type="fixed"> 
-    <parent link="base_link"/>  
-    <child link="after_caster_link"/>  
+  <joint name="$(arg robot_name)_after_caster_joint" type="fixed"> 
+    <parent link="$(arg robot_name)_base_link"/>  
+    <child link="$(arg robot_name)_after_caster_link"/>  
     <origin xyz="-0.06 0.0 -0.076"/>  
     <axis xyz="0 1 0"/> 
   </joint>  
-  <gazebo reference="after_caster_link"> 
+  <gazebo reference="$(arg robot_name)_after_caster_link"> 
     <material>Gazebo/Black</material> 
   </gazebo>  
-  <gazebo reference="after_caster_link"> 
+  <gazebo reference="$(arg robot_name)_after_caster_link"> 
     <mu1 value="0.0"/>  
     <mu2 value="0.0"/>  
     <kp value="1000000.0"/>  
@@ -246,8 +246,8 @@
       </ros>  
       <update_rate>30</update_rate>  
       <!-- wheels -->  
-      <left_joint>left_wheel_joint</left_joint>  
-      <right_joint>right_wheel_joint</right_joint>  
+      <left_joint>$(arg robot_name)_left_wheel_joint</left_joint>  
+      <right_joint>$(arg robot_name)_right_wheel_joint</right_joint>  
       <!-- kinematics -->  
       <wheel_separation>0.2</wheel_separation>  
       <wheel_diameter>0.065</wheel_diameter>  
@@ -258,12 +258,12 @@
       <publish_odom>true</publish_odom>  
       <publish_odom_tf>true</publish_odom_tf>  
       <publish_wheel_tf>false</publish_wheel_tf>  
-      <odometry_frame>odom</odometry_frame>  
-      <robot_base_frame>base_footprint</robot_base_frame> 
+      <odometry_frame>$(arg robot_name)_odom</odometry_frame>  
+      <robot_base_frame>$(arg robot_name)_base_footprint</robot_base_frame> 
     </plugin> 
   </gazebo>  
-  <gazebo reference="imu_link"> 
-    <sensor name="imu_sensor" type="imu"> 
+  <gazebo reference="$(arg robot_name)_imu_link"> 
+    <sensor name="$(arg robot_name)_imu_sensor" type="imu"> 
       <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin"> 
         <ros> 
           <namespace>/$(arg robot_name)</namespace>  
@@ -330,8 +330,8 @@
       </imu> 
     </sensor> 
   </gazebo>  
-  <gazebo reference="laser_link"> 
-    <sensor name="laser_sensor" type="ray"> 
+  <gazebo reference="$(arg robot_name)_laser_link"> 
+    <sensor name="$(arg robot_name)_laser_sensor" type="ray"> 
       <always_on>true</always_on>  
       <visualize>true</visualize>  
       <update_rate>50</update_rate>  
@@ -356,13 +356,13 @@
           <stddev>0.01</stddev> 
         </noise> 
       </ray>  
-      <plugin name="laserscan" filename="libgazebo_ros_ray_sensor.so"> 
+      <plugin name="$(arg robot_name)_laserscan" filename="libgazebo_ros_ray_sensor.so"> 
         <ros> 
           <namespace>/$(arg robot_name)</namespace>  
           <remapping>~/out:=scan</remapping> 
         </ros>  
         <output_type>sensor_msgs/LaserScan</output_type>  
-        <frame_name>laser_link</frame_name> 
+        <frame_name>$(arg robot_name)_laser_link</frame_name> 
       </plugin> 
     </sensor> 
   </gazebo> 

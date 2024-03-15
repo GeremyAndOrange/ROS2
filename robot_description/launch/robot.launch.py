@@ -50,7 +50,7 @@ def generate_launch_description():
     )
 
     cartographer_share = os.path.join(package_share, 'cartographer_config')
-    cartohrapher_config = 'robot_config.lua'
+    cartohrapher_config = 'use_robot_config.lua'
     cartographer_node = Node(
         package = 'cartographer_ros',
         namespace = robot_name,
@@ -60,18 +60,30 @@ def generate_launch_description():
             '-configuration_directory', cartographer_share,
             '-configuration_basename', cartohrapher_config
         ],
-        remappings = [
-            ('submap_list','/submap_list'),
-            ('submap_query','/submap_query')
-        ],
         parameters = [
             {'use_sim_time': True}
         ]
     )
     
+    occupancy_grid_node = Node(
+        package = 'cartographer_ros',
+        namespace = robot_name,
+        executable = 'occupancy_grid_node',
+        name = 'occupancy_grid_node',
+        parameters = [{'use_sim_time': True}],
+        # arguments = [
+        #     '-resolution', 0.05,
+        #     '-publish_period_sec', 1.0
+        # ],
+        remappings = [
+            ('map','/submap')
+        ]
+    )
+
     launch_description.add_action(robot_node)
     launch_description.add_action(spawn_node)
     launch_description.add_action(robot_state_publisher_node)
     launch_description.add_action(cartographer_node)
+    launch_description.add_action(occupancy_grid_node)
 
     return launch_description

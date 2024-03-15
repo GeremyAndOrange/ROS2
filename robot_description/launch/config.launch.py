@@ -20,6 +20,17 @@ def generate_launch_description():
         ]
     )
 
+    python_script = os.path.join(package_share, 'cartographer_config/cartographer_config.py')
+    cartographer_src = os.path.join(package_share, 'cartographer_config/robot_config.lua')
+    cartographer_dst = os.path.join(package_share, 'cartographer_config/use_robot_config.lua')
+    config_command = ExecuteProcess(
+        cmd = [
+            'python3', python_script, robot_name,
+            cartographer_src, cartographer_dst
+        ]
+    )
+
     launch_description.add_action(xacro_command)
+    launch_description.add_action(config_command)
 
     return launch_description

@@ -115,8 +115,8 @@ void RobotNode::PubJointState()
     sensor_msgs::msg::JointState info;
     info.header.stamp = this->get_clock()->now();
     info.header.frame_id = "";
-    info.name.push_back("left_wheel_joint");
-    info.name.push_back("right_wheel_joint");
+    info.name.push_back(this->name + "_left_wheel_joint");
+    info.name.push_back(this->name + "_right_wheel_joint");
     if (this->path.empty())
     {
         info.velocity.push_back(0.0);

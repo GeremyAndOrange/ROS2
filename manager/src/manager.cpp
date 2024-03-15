@@ -35,9 +35,9 @@ void ManagerNode::NewRobot(const interfaces::srv::NewRobot::Request::SharedPtr r
             }
         }
         // update urdf file
-        std::string urdf_command = "ros2 launch robot_description urdf.launch.py robot_name:=robot_" + std::to_string(response->id);
+        std::string urdf_command = "ros2 launch robot_description config.launch.py robot_name:=robot_" + std::to_string(response->id);
         int result = std::system(urdf_command.c_str());
-        RCLCPP_INFO(this->get_logger(), "Update urdf file result: %d",result);
+        RCLCPP_INFO(this->get_logger(), "Update config file result: %d",result);
         // create new robot
         std::string robot_command = "ros2 launch robot_description robot.launch.py robot_name:=robot_" + std::to_string(response->id)
                                   + " x:=" + std::to_string(request->gen_x)
