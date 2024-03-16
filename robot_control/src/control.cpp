@@ -46,8 +46,8 @@ void RobotNode::Pubtf()
     transform.transform.rotation.y = 0.0;
     transform.transform.rotation.z = 0.0;
     transform.transform.rotation.w = 1.0;
-
     transform.header.stamp = this->get_clock()->now();
+    transform.header.stamp.sec = this->get_clock()->now().seconds() + 0.5;
     TFbroadcaster.sendTransform(transform);
 }
 
