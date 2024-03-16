@@ -3,16 +3,11 @@
 // 构造函数,有一个参数为节点名称
 RobotNode::RobotNode(std::string name) : Node(name)
 {
-    // get id
-    this->declare_parameter<std::string>("name", "robot");
-    this->name = this->get_parameter("name").as_string();
-    if (this->name.find('_') != std::string::npos) this->id = this->name.substr(this->name.find('_') + 1);
-    RCLCPP_INFO(this->get_logger(), ("This is robot_" + this->id).c_str());
-
     // parameter
-    this->state = 2;
-    this->left_wheel_postion = 0.0;
-    this->right_wheel_position = 0.0;
+    this->GetParameter();
+
+    // property
+    this->state = relax;
 
     // service
     this->TaskService = this->create_client<interfaces::srv::GetTask>("/get_task");
@@ -23,14 +18,43 @@ RobotNode::RobotNode(std::string name) : Node(name)
 
     // timer
     this->CheckStateTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::CheckState,this));
-    this->JointStateTImer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::PubJointState,this));
+    this->JointStateTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::PubJointState,this));
+    this->PubTfTimer = this->create_wall_timer(std::chrono::milliseconds(100),std::bind(&RobotNode::Pubtf,this));
+}
+
+void RobotNode::GetParameter()
+{
+    this->declare_parameter<std::string>("name", "robot");
+    this->declare_parameter<double>("origin_x",0.0);
+    this->declare_parameter<double>("origin_y",0.0);
+    this->robot.name = this->get_parameter("name").as_string();
+    if (this->robot.name.find('_') != std::string::npos) this->robot.id = this->robot.name.substr(this->robot.name.find('_') + 1);
+    this->origin.x = this->get_parameter("origin_x").as_double();
+    this->origin.y = this->get_parameter("origin_y").as_double();
+}
+
+void RobotNode::Pubtf()
+{
+    tf2_ros::TransformBroadcaster TFbroadcaster(this);
+    geometry_msgs::msg::TransformStamped transform;
+    transform.header.frame_id = "map";
+    transform.child_frame_id = this->robot.name + "_submap";
+    transform.transform.translation.x = -this->origin.x;
+    transform.transform.translation.y = -this->origin.y;
+    transform.transform.translation.z = 0.0;
+    transform.transform.rotation.x = 0.0;
+    transform.transform.rotation.y = 0.0;
+    transform.transform.rotation.z = 0.0;
+    transform.transform.rotation.w = 1.0;
+
+    transform.header.stamp = this->get_clock()->now();
+    TFbroadcaster.sendTransform(transform);
 }
 
 void RobotNode::SubOdomInfo(const nav_msgs::msg::Odometry::SharedPtr info)
 {
     this->position.x = info->pose.pose.position.x;
     this->position.y = info->pose.pose.position.y;
-    this->position.z = info->pose.pose.position.z;
 
     this->quaternion.x = info->pose.pose.orientation.x;
     this->quaternion.y = info->pose.pose.orientation.y;
@@ -46,7 +70,6 @@ void RobotNode::PubMotionControl(int state)
     info.angular.z = speed.angular * state;
     info.linear.x = speed.linear[0] * state;
     info.linear.y = speed.linear[1] * state;
-    info.linear.z = speed.linear[2] * state;
 
     this->PublisherMotionControl = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
     this->PublisherMotionControl->publish(info);
@@ -57,28 +80,26 @@ void RobotNode::CheckState()
     this->GetTask(1);
     switch (this->state)
     {
-    case 1:
+    case work:
         this->PubMotionControl(1);
-        if (CalDistance(this->position,this->path[0]) < PRECISION_1)
-        {
+        if (CalDistance(this->position,this->path[0]) < PRECISION_1) {
             this->path.erase(this->path.begin());
             this->PubMotionControl(0);
-            this->state = 2;
+            this->state = relax;
         }
         
         break;
-    case 2:
-        if (!this->path.empty())
-        {
+    case relax:
+        if (!this->path.empty()) {
             this->PubMotionControl(1);
-            this->state = 1;
+            this->state = work;
         }
         else
         {
             this->GetTask(0);
         }
         break;
-    case 3:
+    case outline:
         break;
     default:
         break;
@@ -89,8 +110,7 @@ void RobotNode::GetTask(int type)
 {
     // type {0: GetTask(), 1: SendPosition()}
     auto request = std::make_shared<interfaces::srv::GetTask_Request>();
-    request->state = 2;
-    request->id = std::stoi(this->id);
+    request->id = std::stoi(this->robot.id);
     request->x = this->position.x;
     request->y = this->position.y;
     if (type == 0) this->TaskService->async_send_request(request,std::bind(&RobotNode::GetTaskCallBack,this,_1));
@@ -101,11 +121,9 @@ void RobotNode::GetTaskCallBack(rclcpp::Client<interfaces::srv::GetTask>::Shared
 {
     Coordinate coordinate;
     auto result = response.get();
-    for (size_t i = 0; i < result->path.size(); i += 2)
-    {
+    for (size_t i = 0; i < result->path.size(); i += 2) {
         coordinate.x = result->path[i];
         coordinate.y = result->path[i+1];
-        coordinate.z = 0;
         this->path.push_back(coordinate);
     }
 }
@@ -115,26 +133,23 @@ void RobotNode::PubJointState()
     sensor_msgs::msg::JointState info;
     info.header.stamp = this->get_clock()->now();
     info.header.frame_id = "";
-    info.name.push_back(this->name + "_left_wheel_joint");
-    info.name.push_back(this->name + "_right_wheel_joint");
-    if (this->path.empty())
-    {
+    info.name.push_back(this->robot.name + "_left_wheel_joint");
+    info.name.push_back(this->robot.name + "_right_wheel_joint");
+    if (this->path.empty()) {
         info.velocity.push_back(0.0);
         info.velocity.push_back(0.0);
-        info.position.push_back(this->left_wheel_postion);
-        info.position.push_back(this->right_wheel_position);
-    }
-    else
-    {
+        info.position.push_back(this->wheel.left);
+        info.position.push_back(this->wheel.right);
+    } else {
         Speed speed = CalSpeed(this->position,this->path[0],this->quaternion);
         double linear_speed = sqrt(pow(speed.linear[0],2) + pow(speed.linear[1],2));
         double angular_speed = speed.angular * DISTANCE_WHEEL / 2;
         info.velocity.push_back(linear_speed - angular_speed);
         info.velocity.push_back(linear_speed + angular_speed);
-        this->left_wheel_postion += info.velocity[0] * (1/50);
-        this->right_wheel_position += info.velocity[1] * (1/50);
-        info.position.push_back(this->left_wheel_postion);
-        info.position.push_back(this->right_wheel_position);
+        this->wheel.left += info.velocity[0] * (1/50);
+        this->wheel.right += info.velocity[1] * (1/50);
+        info.position.push_back(this->wheel.left);
+        info.position.push_back(this->wheel.right);
 
     }
     this->PublisherJointState->publish(info);

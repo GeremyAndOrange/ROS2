@@ -19,10 +19,9 @@ Speed CalSpeed(Coordinate start_point, Coordinate end_point, Quaternion quaterni
     double delta_yaw_theta = fmod(target_yaw_theta - euler_degree.yaw + M_PI, 2 * M_PI) - M_PI;
 
     Speed return_speed;
-    return_speed.angular = std::min(20 * PROPORTIONAL_COEFFICIENT * delta_yaw_theta, ANGULAR_SPEED_MAX);
-    return_speed.linear[0] = std::max(PROPORTIONAL_COEFFICIENT * delta_x, LINEAR_SPEED_MIN);
-    return_speed.linear[1] = std::max(PROPORTIONAL_COEFFICIENT * delta_y, LINEAR_SPEED_MIN);
-    return_speed.linear[2] = 0;
+    return_speed.angular = std::min(20 * COEFFICIENT * delta_yaw_theta, ANGULAR_SPEED_MAX);
+    return_speed.linear[0] = std::max(COEFFICIENT * delta_x, LINEAR_SPEED_MIN);
+    return_speed.linear[1] = std::max(COEFFICIENT * delta_y, LINEAR_SPEED_MIN);
     return return_speed;
 }
 

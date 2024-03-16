@@ -5,19 +5,18 @@
 
 // NUMBER DEFINE
 #define ROBOT_NUMBER 99
-#define PROPORTIONAL_COEFFICIENT 0.1
+#define COEFFICIENT 0.1
 #define PRECISION_1 0.1
 #define PRECISION_2 0.01
 #define PRECISION_3 0.001
 #define PRECISION_4 0.0001
 #define ANGULAR_SPEED_MAX 3.0
 #define LINEAR_SPEED_MIN 0.5
-#define DISTANCE_WHEEL 0.2                      // base_link直径,轮距
+#define DISTANCE_WHEEL 0.2
 
 // SENSOR DEFINE
 
 // MAP DEFINE
 #define MAP_RESOLUTION 0.05
-#define PUBLISH_PERSEC 1.0
 
 #endif

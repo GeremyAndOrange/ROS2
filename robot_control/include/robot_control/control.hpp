@@ -10,6 +10,10 @@ class RobotNode : public rclcpp::Node
 public:
     // 构造函数
     RobotNode(std::string name);
+    // 获取参数
+    void GetParameter();
+    // 发布tf
+    void Pubtf();
     // 获取里程计信息
     void SubOdomInfo(const nav_msgs::msg::Odometry::SharedPtr info);
     // 请求任务/发送自身位置
@@ -24,15 +28,14 @@ public:
     void PubJointState();
 
 private:
-    // parameter
-    std::string id;
-    std::string name;
-    unsigned int state;     // {1:working,2:relaxing,3:outline}
+    // property
+    RobotInfo robot;
+    RobotState state;     // {1:working,2:relaxing,3:outline}
+    Coordinate origin;
     Coordinate position;
+    WheelPosition wheel;
     Quaternion quaternion;
     std::vector<Coordinate> path;
-    double left_wheel_postion;
-    double right_wheel_position;
 
     // service
     rclcpp::Client<interfaces::srv::GetTask>::SharedPtr TaskService;
@@ -44,7 +47,8 @@ private:
 
     // timer
     rclcpp::TimerBase::SharedPtr CheckStateTimer;
-    rclcpp::TimerBase::SharedPtr JointStateTImer;
+    rclcpp::TimerBase::SharedPtr JointStateTimer;
+    rclcpp::TimerBase::SharedPtr PubTfTimer;
 };
 
 #endif

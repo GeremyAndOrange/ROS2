@@ -8,8 +8,10 @@ endif()
 # find dependencies
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(nav_msgs REQUIRED)
 find_package(interfaces REQUIRED)
 find_package(calculator REQUIRED)
+find_package(geometry_msgs)
 
 # find header files
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -31,6 +33,20 @@ add_executable(manager_node
   src/manager_node_start.cpp 
   src/manager.cpp
 )
+
+add_executable(global_map_node
+  src/global_map_start.cpp
+  src/global_map.cpp
+)
+
+ament_target_dependencies(global_map_node 
+  rclcpp
+  interfaces
+  calculator
+  nav_msgs
+  geometry_msgs
+  )
+
 ament_target_dependencies(manager_node 
   rclcpp
   interfaces
@@ -39,5 +55,6 @@ ament_target_dependencies(manager_node
 
 install(TARGETS
   manager_node
+  global_map_node
   DESTINATION lib/${PROJECT_NAME}
 )

@@ -14,9 +14,9 @@ def generate_launch_description():
     urdf_file = os.path.join(package_share, 'urdf/robot.urdf')
     xacro_command = ExecuteProcess(
         cmd = [
-            'xacro',xacro_file,
+            'xacro', xacro_file,
             PythonExpression(['str(','"robot_name:=',robot_name,'")']),
-            '-o',urdf_file,
+            '-o', urdf_file,
         ]
     )
 
@@ -25,8 +25,7 @@ def generate_launch_description():
     cartographer_dst = os.path.join(package_share, 'cartographer_config/use_robot_config.lua')
     config_command = ExecuteProcess(
         cmd = [
-            'python3', python_script, robot_name,
-            cartographer_src, cartographer_dst
+            'python3', python_script, robot_name, cartographer_src, cartographer_dst
         ]
     )
 

@@ -1,6 +1,5 @@
 float32 x
 float32 y
 uint32 id
-uint32 state    # {1:request task, 2:upload position}
 ---
 float64[] path  # 2 data represent 1 coordinate {even:coordinate.x, odd:coordinate.y}

@@ -4,7 +4,7 @@ include "trajectory_builder.lua"
 options = {
   map_builder = MAP_BUILDER,
   trajectory_builder = TRAJECTORY_BUILDER,
-  map_frame = "map",                            -- 全局坐标系
+  map_frame = "submap",                         -- 全局坐标系
   tracking_frame = "base_footprint",            -- 自身坐标系
   published_frame = "odom",                     -- odom到map的tf转换
   odom_frame = "odom",                          -- odom坐标系

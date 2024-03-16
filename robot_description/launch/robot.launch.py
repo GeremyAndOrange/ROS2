@@ -5,8 +5,8 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
-    start_x = LaunchConfiguration('x', default=0.)
-    start_y = LaunchConfiguration('y', default=0.)
+    origin_x = LaunchConfiguration('origin_x', default=0.)
+    origin_y = LaunchConfiguration('origin_y', default=0.)
     robot_name = LaunchConfiguration('robot_name', default='robot')
 
     launch_description = LaunchDescription()
@@ -21,7 +21,9 @@ def generate_launch_description():
         name = 'control',
         parameters = [
             {'name': robot_name},
-            {'use_sim_time': True}
+            {'use_sim_time': True},
+            {'origin_x': origin_x},
+            {'origin_y': origin_y}
         ]
     )
 
@@ -31,8 +33,8 @@ def generate_launch_description():
         arguments = [
             '-entity', robot_name,
             '-file', urdf_file,
-            '-x', start_x,
-            '-y', start_y
+            '-x', origin_x,
+            '-y', origin_y
         ]
     )
 
@@ -70,11 +72,9 @@ def generate_launch_description():
         namespace = robot_name,
         executable = 'occupancy_grid_node',
         name = 'occupancy_grid_node',
-        parameters = [{'use_sim_time': True}],
-        # arguments = [
-        #     '-resolution', 0.05,
-        #     '-publish_period_sec', 1.0
-        # ],
+        parameters = [
+            {'use_sim_time': True}
+        ],
         remappings = [
             ('map','/submap')
         ]

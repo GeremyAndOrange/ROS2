@@ -4,7 +4,9 @@ def cartographer_config(robot_name, original_file, new_file):
 
     with open(new_file, 'w') as file:
         for line in lines:
-            if 'tracking_frame = "base_footprint"' in line:
+            if 'map_frame = "submap"' in line:
+                file.write(f'  map_frame = "{robot_name}_submap",\n')
+            elif 'tracking_frame = "base_footprint"' in line:
                 file.write(f'  tracking_frame = "{robot_name}_base_footprint",\n')
             elif 'published_frame = "odom"' in line:
                 file.write(f'  published_frame = "{robot_name}_odom",\n')

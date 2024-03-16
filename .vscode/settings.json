@@ -76,7 +76,8 @@
         "typeinfo": "cpp",
         "variant": "cpp",
         "bit": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "*.ipp": "cpp"
     },
     "ros.distro": "galactic",
     "cmake.sourceDirectory": "/home/glj/robot/src/calculator"

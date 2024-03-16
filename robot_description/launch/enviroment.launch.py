@@ -21,6 +21,16 @@ def generate_launch_description():
         ],
     )
 
+    global_map_node = Node(
+        package = 'manager',
+        executable = 'global_map_node',
+        name = 'global_map_node',
+        parameters = [
+            {'use_sim_time': True}
+        ]
+    )
+
     launch_description.add_action(start_gazebo_cmd)
+    launch_description.add_action(global_map_node)
 
     return launch_description

@@ -10,19 +10,20 @@ class ManagerNode : public rclcpp::Node
 public:
     // 构造函数
     ManagerNode(std::string name);
-    // 生成行为体函数
+    // 初始化
+    void Initial();
+    // 生成机器
     void NewRobot(const interfaces::srv::NewRobot::Request::SharedPtr request, const interfaces::srv::NewRobot::Response::SharedPtr response);
     // 回复任务
     void SendTask(const interfaces::srv::GetTask::Request::SharedPtr request, const interfaces::srv::GetTask::Response::SharedPtr response);
 
 private:
-    // parameter
-    unsigned int number;
-    unsigned int id[ROBOT_NUMBER];
+    // property
+    RobotMap group[ROBOT_NUMBER];
 
     // service
-    rclcpp::Service<interfaces::srv::NewRobot>::SharedPtr new_robot_service;
-    rclcpp::Service<interfaces::srv::GetTask>::SharedPtr send_task_service;
+    rclcpp::Service<interfaces::srv::NewRobot>::SharedPtr NewRobotService;
+    rclcpp::Service<interfaces::srv::GetTask>::SharedPtr SendTaskService;
 
     // topic
 
