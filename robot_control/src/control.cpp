@@ -19,7 +19,7 @@ RobotNode::RobotNode(std::string name) : Node(name)
     // timer
     this->CheckStateTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::CheckState,this));
     this->JointStateTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::PubJointState,this));
-    this->PubTfTimer = this->create_wall_timer(std::chrono::milliseconds(10),std::bind(&RobotNode::Pubtf,this));
+    this->PubTfTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::Pubtf,this));
 }
 
 void RobotNode::GetParameter()
