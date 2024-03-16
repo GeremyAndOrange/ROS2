@@ -10,8 +10,10 @@ class GlobalMap : public rclcpp::Node
 public:
     // 构造函数
     GlobalMap(std::string name);
+    // 初始化
+    void Initial();
     // 监听tf
-    void SubTF(const geometry_msgs::msg::TransformStamped::SharedPtr info);
+    void SubTF(const tf2_msgs::msg::TFMessage::SharedPtr info);
     // 接收子图
     void SubMap(const nav_msgs::msg::OccupancyGrid::SharedPtr info);
     // 发送地图
@@ -27,7 +29,7 @@ private:
     // topic
     rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr PublisherMap;
     rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr SubscriptionSubmap;
-    rclcpp::Subscription<geometry_msgs::msg::TransformStamped>::SharedPtr SubscriptionTF;
+    rclcpp::Subscription<tf2_msgs::msg::TFMessage>::SharedPtr SubscriptionTF;
 
     // timer
     rclcpp::TimerBase::SharedPtr MapTimer;

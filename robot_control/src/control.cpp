@@ -19,7 +19,7 @@ RobotNode::RobotNode(std::string name) : Node(name)
     // timer
     this->CheckStateTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::CheckState,this));
     this->JointStateTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::PubJointState,this));
-    this->PubTfTimer = this->create_wall_timer(std::chrono::milliseconds(100),std::bind(&RobotNode::Pubtf,this));
+    this->PubTfTimer = this->create_wall_timer(std::chrono::milliseconds(10),std::bind(&RobotNode::Pubtf,this));
 }
 
 void RobotNode::GetParameter()
@@ -28,7 +28,7 @@ void RobotNode::GetParameter()
     this->declare_parameter<double>("origin_x",0.0);
     this->declare_parameter<double>("origin_y",0.0);
     this->robot.name = this->get_parameter("name").as_string();
-    if (this->robot.name.find('_') != std::string::npos) this->robot.id = this->robot.name.substr(this->robot.name.find('_') + 1);
+    this->robot.id = this->robot.name.substr(this->robot.name.find('_') + 1);
     this->origin.x = this->get_parameter("origin_x").as_double();
     this->origin.y = this->get_parameter("origin_y").as_double();
 }
@@ -39,8 +39,8 @@ void RobotNode::Pubtf()
     geometry_msgs::msg::TransformStamped transform;
     transform.header.frame_id = "map";
     transform.child_frame_id = this->robot.name + "_submap";
-    transform.transform.translation.x = -this->origin.x;
-    transform.transform.translation.y = -this->origin.y;
+    transform.transform.translation.x = this->origin.x;
+    transform.transform.translation.y = this->origin.y;
     transform.transform.translation.z = 0.0;
     transform.transform.rotation.x = 0.0;
     transform.transform.rotation.y = 0.0;
