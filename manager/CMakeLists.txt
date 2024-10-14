@@ -47,13 +47,14 @@ ament_target_dependencies(global_map_node
   nav_msgs
   geometry_msgs
   tf2_msgs
-  )
+)
 
 ament_target_dependencies(manager_node 
   rclcpp
   interfaces
   calculator
-  )
+  nav_msgs
+)
 
 install(TARGETS
   manager_node

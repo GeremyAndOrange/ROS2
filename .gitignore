@@ -1,0 +1,12 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pkl
+*.txt
+log/
+!requirements.txt
+*.pth
+*.png
+install/
+build/

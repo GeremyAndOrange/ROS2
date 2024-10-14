@@ -6,13 +6,17 @@
                 "limitSymbolsToIncludedHeaders": false
             },
             "includePath": [
-                "/opt/ros/galactic/include/**",
-                "/home/glj/robot/install/**",
-                "/home/glj/robot/src/calculator/include/**",
-                "/home/glj/robot/src/manager/include/**",
-                "/home/glj/robot/src/robot_control/include/**",
+                "/opt/ros/humble/include/**",
+                "/home/glj/Ros2/install/**",
+                "/home/glj/Ros2/calculator/include/**",
+                "/home/glj/Ros2/manager/include/**",
+                "/home/glj/Ros2/robot_control/include/**",
+                "/home/glj/Ros2/work_station/include/**",
                 "/usr/include/**",
-                "${workspaceFolder}"
+                "${workspaceFolder}",
+                "${workspaceFolder}/manager/include",
+                "${workspaceFolder}/work_station/include/work_station",
+                "${workspaceFolder}/build/**"
             ],
             "name": "ROS",
             "intelliSenseMode": "gcc-x64",

@@ -1,0 +1,5 @@
+#ifndef CONSOLE_INTERFACES
+#define CONSOLE_INTERFACES
+
+
+#endif
