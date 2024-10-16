@@ -16,7 +16,8 @@ ConsoleGui::~ConsoleGui()
 
 void ConsoleGui::OnSystemStartClicked()
 {
-    std::string manager_command = "ros2 launch robot_description environment.launch.py";
+    // start manager/gazebo/global_map
+    std::string manager_command = "ros2 launch robot_description environment.launch.py &";
     std::system(manager_command.c_str());
     
     int RobotNumber = ui.RobotNumber->toPlainText().toInt();
