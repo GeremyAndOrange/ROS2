@@ -6,26 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1132</width>
-    <height>937</height>
+    <width>1070</width>
+    <height>940</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Console</string>
   </property>
-  <widget class="QPushButton" name="StartSystem">
-   <property name="geometry">
-    <rect>
-     <x>970</x>
-     <y>30</y>
-     <width>121</width>
-     <height>25</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Start System</string>
-   </property>
-  </widget>
   <widget class="QGroupBox" name="GridMap">
    <property name="geometry">
     <rect>
@@ -41,11 +28,83 @@
    <widget class="QGraphicsView" name="GridMapGraphic">
     <property name="geometry">
      <rect>
-      <x>20</x>
+      <x>10</x>
       <y>30</y>
-      <width>671</width>
-      <height>611</height>
+      <width>691</width>
+      <height>621</height>
      </rect>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="InoGroupBox">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>710</y>
+     <width>1001</width>
+     <height>191</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Infomation</string>
+   </property>
+   <widget class="QTextEdit" name="InfoText">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>981</width>
+      <height>151</height>
+     </rect>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QGroupBox" name="ConsoleGroupBox">
+   <property name="geometry">
+    <rect>
+     <x>770</x>
+     <y>20</y>
+     <width>261</width>
+     <height>661</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Console</string>
+   </property>
+   <widget class="QTextEdit" name="RobotNumber">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>30</y>
+      <width>120</width>
+      <height>30</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QLabel" name="RobotNumberPrompt">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>30</y>
+      <width>120</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Robot Number:</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="StartSystem">
+    <property name="geometry">
+     <rect>
+      <x>130</x>
+      <y>620</y>
+      <width>120</width>
+      <height>30</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Start System</string>
     </property>
    </widget>
   </widget>
