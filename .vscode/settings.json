@@ -85,5 +85,6 @@
         "stop_token": "cpp"
     },
     "ros.distro": "galactic",
-    "cmake.sourceDirectory": "/home/glj/robot/src/calculator"
+    "cmake.sourceDirectory": "/home/glj/robot/src/calculator",
+    "cmake.ignoreCMakeListsMissing": true
 }
