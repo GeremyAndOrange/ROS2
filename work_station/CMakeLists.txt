@@ -9,11 +9,6 @@ endif()
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(Qt5 COMPONENTS Core Gui Widgets REQUIRED)
-# manager dependencies
-find_package(manager REQUIRED)
-find_package(interfaces REQUIRED)
-find_package(nav_msgs REQUIRED)
-find_package(calculator REQUIRED)
 
 # find header files
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -26,7 +21,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(UI_FILES src/console_gui.ui)
 QT5_WRAP_UI(UI_HEADERS ${UI_FILES})
 
-set(MOC_FILES include/console_gui/console_gui.h)
+set(MOC_FILES include/console_gui/console_gui.hpp)
 QT5_WRAP_CPP(MOC_HEADERS ${MOC_FILES})
 
 # system
@@ -44,17 +39,12 @@ endif()
 
 # node
 add_executable(console_node 
-  src/console.cpp
-  src/console_start_node.cpp
+  src/console_gui_start.cpp
   src/console_gui.cpp
 )
 
 ament_target_dependencies(console_node 
   rclcpp
-  manager
-  interfaces
-  nav_msgs
-  calculator
 )
 
 # Qt

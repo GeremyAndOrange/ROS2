@@ -70,7 +70,7 @@ def generate_launch_description():
     occupancy_grid_node = Node(
         package = 'cartographer_ros',
         namespace = robot_name,
-        executable = 'occupancy_grid_node',
+        executable = 'cartographer_occupancy_grid_node',
         name = 'occupancy_grid_node',
         parameters = [
             {'use_sim_time': True}
