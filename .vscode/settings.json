@@ -77,8 +77,14 @@
         "variant": "cpp",
         "bit": "cpp",
         "valarray": "cpp",
-        "*.ipp": "cpp"
+        "*.ipp": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp"
     },
     "ros.distro": "galactic",
-    "cmake.sourceDirectory": "/home/glj/robot/src/calculator"
+    "cmake.sourceDirectory": "/home/glj/robot/src/calculator",
+    "cmake.ignoreCMakeListsMissing": true
 }

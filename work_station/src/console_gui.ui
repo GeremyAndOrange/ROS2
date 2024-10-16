@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Dialog</class>
- <widget class="QDialog" name="Dialog">
+ <class>Console</class>
+ <widget class="QDialog" name="Console">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -11,20 +11,43 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Dialog</string>
+   <string>Console</string>
   </property>
-  <widget class="QPushButton" name="pushButton">
+  <widget class="QPushButton" name="StartSystem">
    <property name="geometry">
     <rect>
-     <x>958</x>
-     <y>170</y>
+     <x>970</x>
+     <y>30</y>
      <width>121</width>
      <height>25</height>
     </rect>
    </property>
    <property name="text">
-    <string>start system</string>
+    <string>Start System</string>
    </property>
+  </widget>
+  <widget class="QGroupBox" name="GridMap">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>20</y>
+     <width>711</width>
+     <height>661</height>
+    </rect>
+   </property>
+   <property name="title">
+    <string>Grid Map</string>
+   </property>
+   <widget class="QGraphicsView" name="GridMapGraphic">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>30</y>
+      <width>671</width>
+      <height>611</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

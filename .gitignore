@@ -6,6 +6,7 @@ __pycache__/
 *.txt
 log/
 !requirements.txt
+!CMakeLists.txt
 *.pth
 *.png
 install/

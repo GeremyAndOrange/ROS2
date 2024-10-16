@@ -28,8 +28,6 @@ if(BUILD_TESTING)
   ament_lint_auto_find_test_dependencies()
 endif()
 
-ament_package()
-
 add_executable(manager_node 
   src/manager_node_start.cpp 
   src/manager.cpp
@@ -61,3 +59,24 @@ install(TARGETS
   global_map_node
   DESTINATION lib/${PROJECT_NAME}
 )
+
+install(DIRECTORY include/
+  DESTINATION include
+)
+
+add_library(manager SHARED ${CMAKE_CURRENT_SOURCE_DIR}/src/manager.cpp)
+ament_target_dependencies(manager 
+  rclcpp
+  interfaces
+  calculator
+  nav_msgs
+)
+install(
+  TARGETS manager
+  LIBRARY DESTINATION lib
+)
+
+ament_export_include_directories(include)
+ament_export_libraries(${PROJECT_NAME})
+
+ament_package()
