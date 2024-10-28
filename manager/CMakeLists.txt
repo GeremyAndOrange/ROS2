@@ -11,8 +11,7 @@ find_package(rclcpp REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(interfaces REQUIRED)
 find_package(calculator REQUIRED)
-find_package(geometry_msgs)
-find_package(tf2_msgs)
+find_package(tf2_ros REQUIRED)
 
 # find header files
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -43,8 +42,7 @@ ament_target_dependencies(global_map_node
   interfaces
   calculator
   nav_msgs
-  geometry_msgs
-  tf2_msgs
+  tf2_ros
 )
 
 ament_target_dependencies(manager_node 

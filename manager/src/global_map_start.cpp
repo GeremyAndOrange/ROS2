@@ -1,4 +1,4 @@
-#include "manager/global_map.hpp"
+#include "global_map/global_map.hpp"
 
 int main(int argc, char **argv)
 {

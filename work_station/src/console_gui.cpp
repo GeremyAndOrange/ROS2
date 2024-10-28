@@ -25,12 +25,19 @@ void ConsoleGui::OnSystemStartClicked()
         // update urdf file
         std::string urdf_command = "ros2 launch robot_description config.launch.py robot_name:=robot_" + std::to_string(i);
         std::system(urdf_command.c_str());
+
+        // wait 1 senconds
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+
         // create new robot
         std::string robot_command = " ros2 launch robot_description robot.launch.py robot_name:=robot_" + std::to_string(i)
-                                  + " origin_x:=" + std::to_string(0)
-                                  + " origin_y:=" + std::to_string(i)
+                                  + " origin_x:=" + std::to_string(0) + ".0"
+                                  + " origin_y:=" + std::to_string(i) + ".0"
                                   + " &";
         std::system(robot_command.c_str());
+
+        // wait 1 senconds
+        std::this_thread::sleep_for(std::chrono::seconds(1));
     }
 
     ui.InfoText->setText("System Starting Finished\n");

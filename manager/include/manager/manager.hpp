@@ -8,27 +8,39 @@
 class ManagerNode : public rclcpp::Node
 {
 public:
-    // 构造函数
     ManagerNode(std::string name);
-    // 初始化
+    ~ManagerNode();
+
+private:
     void Initial();
-    // 生成机器
-    void NewRobot(const interfaces::srv::NewRobot::Request::SharedPtr request, const interfaces::srv::NewRobot::Response::SharedPtr response);
-    // 回复任务
+
+private:
+    void ExpansionMap();
+    void AggregateTask(std::string RobotId);
+    void RRTAlgorithm();
+
+private:
+    void SubMap(const nav_msgs::msg::OccupancyGrid::SharedPtr info);
+
+private:
     void SendTask(const interfaces::srv::GetTask::Request::SharedPtr request, const interfaces::srv::GetTask::Response::SharedPtr response);
 
 private:
     // property
-    RobotMap group[ROBOT_NUMBER];
+    std::mutex MapMutex;
+    std::map<std::string, RobotInfo> RobotGroup;
+    nav_msgs::msg::OccupancyGrid StoredMap;
+    nav_msgs::msg::OccupancyGrid ExpansionedMap;
 
     // service
-    rclcpp::Service<interfaces::srv::NewRobot>::SharedPtr NewRobotService;
     rclcpp::Service<interfaces::srv::GetTask>::SharedPtr SendTaskService;
 
     // topic
+    rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr SubscriptionGLobalMap;
+    rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr PublisherExpansionedMap;
 
     // timer
-
+    
 };
 
 #endif

@@ -51,6 +51,17 @@ def generate_launch_description():
         ]
     )
 
+    joint_state_publisher_node = Node(
+        package='joint_state_publisher',
+        namespace = robot_name,
+        executable='joint_state_publisher',
+        name='joint_state_publisher',
+        parameters = [
+            {'robot_description': robot_description},
+            {'use_sim_time': True}
+        ]
+    )
+
     cartographer_share = os.path.join(package_share, 'cartographer_config')
     cartohrapher_config = 'use_robot_config.lua'
     cartographer_node = Node(
@@ -83,6 +94,7 @@ def generate_launch_description():
     launch_description.add_action(robot_node)
     launch_description.add_action(spawn_node)
     launch_description.add_action(robot_state_publisher_node)
+    launch_description.add_action(joint_state_publisher_node)
     launch_description.add_action(cartographer_node)
     launch_description.add_action(occupancy_grid_node)
 

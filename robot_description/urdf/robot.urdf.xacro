@@ -238,7 +238,7 @@
     <kd value="10.0"/> 
   </gazebo>  
   <gazebo> 
-    <plugin name="diff_drive" filename="libgazebo_ros_diff_drive.so"> 
+    <plugin name="$(arg robot_name)_diff_drive" filename="libgazebo_ros_diff_drive.so"> 
       <ros> 
         <namespace>/$(arg robot_name)</namespace>  
         <remapping>cmd_vel:=cmd_vel</remapping>  

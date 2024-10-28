@@ -1,5 +1,8 @@
-float32 x
-float32 y
+float32 coor_x
+float32 coor_y
+float32 tf_x
+float32 tf_y
 uint32 id
 ---
+bool is_path
 float64[] path  # 2 data represent 1 coordinate {even:coordinate.x, odd:coordinate.y}

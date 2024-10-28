@@ -24,7 +24,6 @@ if(BUILD_TESTING)
 endif()
 
 rosidl_generate_interfaces(${PROJECT_NAME}
-  "srv/NewRobot.srv"
   "srv/GetTask.srv"
 )
 

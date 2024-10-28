@@ -8,66 +8,72 @@ using std::placeholders::_2;
 using std::placeholders::_3;
 using std::placeholders::_4;
 
-struct Coordinate {
+typedef struct _Coordinate {
     double x;
     double y;
-};
+    _Coordinate()
+    {
+        x = 0;
+        y = 0;
+    }
+} Coordinate;
 
-struct Quaternion {
+typedef struct _Quaternion {
     double x;
     double y;
     double z;
     double w;
-};
+    _Quaternion()
+    {
+        x = 0;
+        y = 0;
+        z = 0;
+        w = 0;
+    }
+} Quaternion;
 
-struct EulerDegree {
+typedef struct _EulerDegree {
     double roll;
     double pitch;
     double yaw;
-};
+    _EulerDegree()
+    {
+        roll = 0;
+        pitch = 0;
+        yaw = 0;
+    }
+} EulerDegree;
 
-struct Speed {
-    // [x,y]
+typedef struct _CmlSpeed {
     double linear[2];
-    // [z]
     double angular;
-};
+    _CmlSpeed()
+    {
+        linear[0] = 0;
+        linear[1] = 0;
+        angular = 0;
+    }
+} CmlSpeed;
 
-struct WheelPosition {
-    double left;
-    double right;
-};
+typedef enum _RobotState {
+    WORK,
+    RELAX,
+    WAIT
+} RobotState;
 
-enum RobotState {
-    work,
-    relax,
-    outline
-};
-
-struct RobotInfo {
+typedef struct _RobotInfo {
     std::string id;
     std::string name;
-};
-
-enum Existence {
-    yes,
-    no
-};
-
-struct RobotMap {
-    Existence existence;
-    Coordinate postion;
-};
-
-struct Map {
-    int height;
-    int width;
-    Coordinate origin;
-    std::vector<int8_t> data;
-};
-
-struct RobotTF {
+    Coordinate coor;
     Coordinate tf;
-};
+    Quaternion quat;
+    RobotState state;
+    _RobotInfo()
+    {
+        id = "";
+        name = "";
+        state = RELAX;
+    }
+} RobotInfo;
 
 #endif
