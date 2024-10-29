@@ -13,5 +13,7 @@
 
 // MAP DEFINE
 #define EXPANSION_RADIUS 0.1              // ROBOT WIDTH /m
+#define RRT_STEP_SIZE 0.2                 // 2*EXPANSION_RADIUS /m
+#define KMEANS_ITERATION 1e4
 
 #endif

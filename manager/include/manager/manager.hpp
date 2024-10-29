@@ -16,8 +16,14 @@ private:
 
 private:
     void ExpansionMap();
-    void AggregateTask(std::string RobotId);
-    void RRTAlgorithm();
+    bool ScanBoundary(Coordinate PointInMap, std::vector<Coordinate>& BoundaryPoints);
+    bool AggregateTask(const std::vector<Coordinate>& BoundaryPoints, std::vector<Coordinate>& TaskPoints);
+    void DijsktraAlgorithm(Coordinate SourcePoint, Coordinate TargetPoint, std::vector<double>& TaskPathPlanning);
+
+private:
+    bool IsValidPoint(Coordinate point);
+    Coordinate GenerateRandomNode();
+    Coordinate FindNewNode(Coordinate LastNode, Coordinate NextNode);
 
 private:
     void SubMap(const nav_msgs::msg::OccupancyGrid::SharedPtr info);
@@ -31,6 +37,10 @@ private:
     std::map<std::string, RobotInfo> RobotGroup;
     nav_msgs::msg::OccupancyGrid StoredMap;
     nav_msgs::msg::OccupancyGrid ExpansionedMap;
+
+    // ptr
+    std::unique_ptr<tf2_ros::Buffer> TfBuffer;
+    std::shared_ptr<tf2_ros::TransformListener> TfListener;
 
     // service
     rclcpp::Service<interfaces::srv::GetTask>::SharedPtr SendTaskService;

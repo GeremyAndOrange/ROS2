@@ -50,6 +50,7 @@ ament_target_dependencies(manager_node
   interfaces
   calculator
   nav_msgs
+  tf2_ros
 )
 
 install(TARGETS
@@ -68,6 +69,7 @@ ament_target_dependencies(manager
   interfaces
   calculator
   nav_msgs
+  tf2_ros
 )
 install(
   TARGETS manager

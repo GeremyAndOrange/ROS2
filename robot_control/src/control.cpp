@@ -97,7 +97,7 @@ void RobotNode::CheckState()
 void RobotNode::GetTask()
 {
     auto request = std::make_shared<interfaces::srv::GetTask_Request>();
-    request->id = std::stoi(this->robot.id);
+    request->id = this->robot.id;
     request->coor_x = this->robot.coor.x;
     request->coor_y = this->robot.coor.y;
     request->tf_x = this->robot.tf.x;
