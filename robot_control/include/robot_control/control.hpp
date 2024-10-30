@@ -28,6 +28,7 @@ private:
     void GetTaskCallBack(rclcpp::Client<interfaces::srv::GetTask>::SharedFuture response);
 
 private:
+    void CheckCollision(const sensor_msgs::msg::LaserScan::SharedPtr info);
     void PubMotionControl();
 
 private:
@@ -49,6 +50,7 @@ private:
     // topic
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr PublisherMotionControl;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr SubscriptionOdomInfo;
+    rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr SubscriptionLaserInfo;
 
     // timer
     rclcpp::TimerBase::SharedPtr CheckStateTimer;

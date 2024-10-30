@@ -16,6 +16,17 @@ typedef struct _Coordinate {
         x = 0;
         y = 0;
     }
+    _Coordinate(double param_x, double param_y)
+    {
+        x = param_x;
+        y = param_y;
+    }
+    bool operator==(const _Coordinate& other) const {
+        return x == other.x && y == other.y;
+    }
+    bool operator!=(const _Coordinate& other) const {
+        return x != other.x || y != other.y;
+    }
 } Coordinate;
 
 typedef struct _Quaternion {

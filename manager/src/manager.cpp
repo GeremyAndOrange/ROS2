@@ -44,16 +44,23 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
     // calculate expansion map
     ExpansionMap();
 
-    // coordinate in map
-    Coordinate PointInMap;
     // odom -> world
-    Coordinate PositionInMap;
+    Coordinate PointInMap;
     geometry_msgs::msg::TransformStamped odomToWorld;
     try {
         odomToWorld = TfBuffer->lookupTransform("world", "robot_" + robot.id + "_odom", tf2::TimePointZero);
-        PositionInMap.x = robot.coor.x + odomToWorld.transform.translation.x;
-        PositionInMap.y = robot.coor.y + odomToWorld.transform.translation.y;
+        
+        // coordinate in world
+        Coordinate PositionInWorld;
+        PositionInWorld.x = robot.coor.x + odomToWorld.transform.translation.x;
+        PositionInWorld.y = robot.coor.y + odomToWorld.transform.translation.y;
 
+        // coordinate in map
+        Coordinate PositionInMap;
+        PositionInMap.x = PositionInWorld.x - this->ExpansionedMap.info.origin.position.x;
+        PositionInMap.y = PositionInWorld.y - this->ExpansionedMap.info.origin.position.y;
+        
+        // coordinate index relative origin
         PointInMap.x = std::round(PositionInMap.x / this->ExpansionedMap.info.resolution);
         PointInMap.y = std::round(PositionInMap.y / this->ExpansionedMap.info.resolution);
     }
@@ -81,19 +88,43 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
                     TargetPoint = task;                                 // coordinate in map
                 }
             }
-            RCLCPP_ERROR(this->get_logger(), "TASK POINT %f , %f.", TargetPoint.x, TargetPoint.y);
-            RCLCPP_ERROR(this->get_logger(), "TASK POINT %f , %f.", PointInMap.x, PointInMap.y);
 
             // calculate path planning
-            std::vector<double> TaskPathPlanning;
-            DijsktraAlgorithm(PointInMap, TargetPoint, TaskPathPlanning);
+            std::vector<Coordinate> TaskPathPlanning;
+            bRets = DijsktraAlgorithm(PointInMap, TargetPoint, TaskPathPlanning);
+            if (bRets) {
+                // skip path points
+                std::vector<int> RemoveIndex;
+                for (size_t i = 1; i <TaskPathPlanning.size()-1; i++) {
+                    Coordinate LastPoint = TaskPathPlanning[i-1];
+                    Coordinate NextPoint = TaskPathPlanning[i+1];
+                    Coordinate CurrentPoint = TaskPathPlanning[i];
+                    if ((CurrentPoint.x - LastPoint.x) == (NextPoint.x - CurrentPoint.x) && (CurrentPoint.y - LastPoint.y) == (NextPoint.y - CurrentPoint.y)) {
+                        RemoveIndex.push_back(i);
+                    }
+                }
+                for (auto it = RemoveIndex.rbegin(); it != RemoveIndex.rend(); ++it) {
+                    TaskPathPlanning.erase(TaskPathPlanning.begin() + *it);
+                }
 
-            // smoothly path
-
-            // send task path
-            std::vector<double> target_path = {robot.coor.x + robot.tf.x + 4.0, robot.coor.y + robot.tf.y, robot.coor.x + robot.tf.x, robot.coor.y + robot.tf.y};
-            response->is_path = true;
-            response->path = target_path;
+                // send task path
+                std::vector<double> target_path;
+                for (const auto& point : TaskPathPlanning) {
+                    RCLCPP_INFO(this->get_logger(), "PATH POINT. %f, %f", point.x, point.y);
+                    Coordinate TargetRealPotion;
+                    TargetRealPotion.x = point.x * this->ExpansionedMap.info.resolution + this->ExpansionedMap.info.origin.position.x;
+                    TargetRealPotion.y = point.y * this->ExpansionedMap.info.resolution + this->ExpansionedMap.info.origin.position.y;
+                    target_path.push_back(TargetRealPotion.x);
+                    target_path.push_back(TargetRealPotion.y);
+                }
+                response->is_path = true;
+                response->path = target_path;
+            }
+            else {
+                RCLCPP_ERROR(this->get_logger(), "NO PATH.");
+                response->is_path = false;
+                response->path = {};
+            }
         }
         else {
             RCLCPP_ERROR(this->get_logger(), "NO CALCULATE TASK POINTS.");
@@ -269,7 +300,58 @@ bool ManagerNode::AggregateTask(const std::vector<Coordinate>& BoundaryPoints, s
     }
 }
 
-void ManagerNode::DijsktraAlgorithm(Coordinate SourcePoint, Coordinate TargetPoint, std::vector<double>& TaskPathPlanning)
+bool ManagerNode::DijsktraAlgorithm(Coordinate SourcePoint, Coordinate TargetPoint, std::vector<Coordinate>& TaskPathPlanning)
 {
+    uint32_t width = this->ExpansionedMap.info.width;
+    uint32_t height = this->ExpansionedMap.info.height;
 
+    std::vector<std::vector<bool>> visited(width, std::vector<bool>(height, false));
+    std::vector<Coordinate> directions = {{0.0,1.0},{0.0,-1.0},{-1.0,0.0},{1.0,0.0}};
+    std::vector<std::vector<Coordinate>> parents(width, std::vector<Coordinate>(height));
+    std::vector<std::vector<double>> distances(width, std::vector<double>(height, std::numeric_limits<double>::max()));
+
+    std::vector<Coordinate> OpenSet;
+    OpenSet.push_back(SourcePoint);
+    distances[int(SourcePoint.x)][int(SourcePoint.y)] = 0;
+    while (!OpenSet.empty()) {
+        Coordinate current = OpenSet.front();
+        for (const auto& node : OpenSet) {
+            if (distances[int(node.x)][int(node.y)] < distances[int(current.x)][int(current.y)]) {
+                current = node;
+            }
+        }
+
+        visited[int(current.x)][int(current.y)] = true;
+        OpenSet.erase(OpenSet.begin());
+
+        if (current == TargetPoint) {
+            // Reconstruct path
+            while (current != SourcePoint) {
+                TaskPathPlanning.push_back(current);
+                current = parents[int(current.x)][int(current.y)];
+            }
+            TaskPathPlanning.push_back(SourcePoint);
+            std::reverse(TaskPathPlanning.begin(), TaskPathPlanning.end());
+            return true;
+        }
+
+
+        for (const auto& dir : directions) {
+            Coordinate neighbor = {current.x + dir.x, current.y + dir.y};
+            if (neighbor.x >= 0 && neighbor.x < width && neighbor.y >= 0 && neighbor.y < height) {
+                // skip used node and obstacle
+                if (visited[int(neighbor.x)][int(neighbor.y)] || this->ExpansionedMap.data[neighbor.y * width + neighbor.x] <= 50) {
+                    // move 1 grid
+                    double newDist = distances[int(current.x)][int(current.y)] + 1;
+                    if (newDist < distances[neighbor.x][neighbor.y]) {
+                        distances[int(neighbor.x)][int(neighbor.y)] = newDist;
+                        parents[int(neighbor.x)][int(neighbor.y)] = current;
+                        OpenSet.push_back(neighbor);
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
 }

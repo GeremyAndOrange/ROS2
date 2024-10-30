@@ -25,6 +25,7 @@ void RobotNode::InitialVariable()
     // topic
     this->PublisherMotionControl = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
     this->SubscriptionOdomInfo = this->create_subscription<nav_msgs::msg::Odometry>("odom",10,std::bind(&RobotNode::SubOdomInfo,this,_1));
+    this->SubscriptionLaserInfo = this->create_subscription<sensor_msgs::msg::LaserScan>("scan",10,std::bind(&RobotNode::CheckCollision,this,_1));
 
     // timer
     this->CheckStateTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::CheckState,this));
@@ -52,6 +53,31 @@ void RobotNode::SubOdomInfo(const nav_msgs::msg::Odometry::SharedPtr info)
     this->robot.quat.y = info->pose.pose.orientation.y;
     this->robot.quat.z = info->pose.pose.orientation.z;
     this->robot.quat.w = info->pose.pose.orientation.w;
+}
+
+void RobotNode::CheckCollision(const sensor_msgs::msg::LaserScan::SharedPtr info)
+{
+    // tf laser->basefootprint
+
+    // calculate valid range
+
+    // calculate is checked
+
+    // calculate cmd_vel
+    // for (const auto& distance : info->ranges) {
+    //     if (distance < info->range_min + COLLISION_RANGE) {
+    //         RCLCPP_INFO(this->get_logger(), "IMMEDIATELY COLLIDE.");
+
+    //         geometry_msgs::msg::Twist info; 
+    //         info.angular.z = 0;
+    //         info.linear.x = 0;
+    //         info.linear.y = 0;
+    //         this->PublisherMotionControl->publish(info);
+
+    //         this->path.clear();
+    //         this->robot.state = RELAX;
+    //     }
+    // }
 }
 
 void RobotNode::PubMotionControl()

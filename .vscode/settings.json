@@ -82,7 +82,8 @@
         "concepts": "cpp",
         "numbers": "cpp",
         "semaphore": "cpp",
-        "stop_token": "cpp"
+        "stop_token": "cpp",
+        "queue": "cpp"
     },
     "ros.distro": "galactic",
     "cmake.sourceDirectory": "/home/glj/robot/src/calculator",

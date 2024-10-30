@@ -18,7 +18,7 @@ private:
     void ExpansionMap();
     bool ScanBoundary(Coordinate PointInMap, std::vector<Coordinate>& BoundaryPoints);
     bool AggregateTask(const std::vector<Coordinate>& BoundaryPoints, std::vector<Coordinate>& TaskPoints);
-    void DijsktraAlgorithm(Coordinate SourcePoint, Coordinate TargetPoint, std::vector<double>& TaskPathPlanning);
+    bool DijsktraAlgorithm(Coordinate SourcePoint, Coordinate TargetPoint, std::vector<Coordinate>& TaskPathPlanning);
 
 private:
     bool IsValidPoint(Coordinate point);
