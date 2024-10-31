@@ -88,6 +88,7 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
                     TargetPoint = task;                                 // coordinate in map
                 }
             }
+            RCLCPP_INFO(this->get_logger(), "TASK POINT %f, %f.", TargetPoint.x, TargetPoint.y);
 
             // calculate path planning
             std::vector<Coordinate> TaskPathPlanning;
@@ -208,9 +209,11 @@ bool ManagerNode::ScanBoundary(Coordinate PointInMap, std::vector<Coordinate>& B
         Coordinate NewPoint = FindNewNode(NearestPoint, RandomPoint);
 
         if (IsValidPoint(NewPoint)) {
-            RRTree.push_back(NewPoint);
-            if (this->ExpansionedMap.data[int(NewPoint.y) * this->ExpansionedMap.info.width + int(NewPoint.x)] == -1) {
-                BoundaryPoints.push_back(NewPoint); 
+            if (IsValidPoint(NearestPoint) && this->ExpansionedMap.data[int(NearestPoint.y) * this->ExpansionedMap.info.width + (NearestPoint.x)] != -1) {
+                RRTree.push_back(NewPoint);
+                if (this->ExpansionedMap.data[int(NewPoint.y) * this->ExpansionedMap.info.width + int(NewPoint.x)] == -1) {
+                    BoundaryPoints.push_back(NewPoint); 
+                }
             }
         }
     }
@@ -231,7 +234,7 @@ bool ManagerNode::IsValidPoint(Coordinate point)
 
     uint32_t x = uint32_t(point.x);
     uint32_t y = uint32_t(point.y);
-    return  x < width && y < height && this->ExpansionedMap.data[y * width + x] < 50;
+    return  x < width && y < height && this->ExpansionedMap.data[y * width + x] <= 65;
 }
 
 Coordinate ManagerNode::GenerateRandomNode()
@@ -260,19 +263,19 @@ Coordinate ManagerNode::FindNewNode(Coordinate LastNode, Coordinate NextNode)
 
 bool ManagerNode::AggregateTask(const std::vector<Coordinate>& BoundaryPoints, std::vector<Coordinate>& TaskPoints)
 {
-    int RobotNum = this->RobotGroup.size();
-    std::vector<Coordinate> centroids(RobotNum * 2);
+    int CentroidsNum =  2 * this->RobotGroup.size();
+    std::vector<Coordinate> centroids(CentroidsNum);
 
     int IterationCount = 0;
     bool converged = false;
     while (!converged || IterationCount < KMEANS_ITERATION) {
         IterationCount += 1;
         // allocation points
-        std::vector<std::vector<Coordinate>> clusters(RobotNum);
+        std::vector<std::vector<Coordinate>> clusters(CentroidsNum);
         for (const auto& BoundaryPoint : BoundaryPoints) {
             int ClosestCentroidIndex = 0;
             double ClosestDistance = std::numeric_limits<double>::max();
-            for (int i = 0; i < RobotNum; ++i) {
+            for (int i = 0; i < CentroidsNum; ++i) {
                 double distance = CalDistance(BoundaryPoint, centroids[i]);
                 if (distance < ClosestDistance) {
                     ClosestDistance = distance;
@@ -284,7 +287,7 @@ bool ManagerNode::AggregateTask(const std::vector<Coordinate>& BoundaryPoints, s
 
         // update centroid
         converged = true;
-        for (int i = 0; i < RobotNum; i++) {
+        for (int i = 0; i < CentroidsNum; i++) {
             Coordinate NewCentroid;
 
             if (clusters[i].size() > 0) {
@@ -352,9 +355,21 @@ bool ManagerNode::DijsktraAlgorithm(Coordinate SourcePoint, Coordinate TargetPoi
             Coordinate neighbor = {current.x + dir.x, current.y + dir.y};
             if (neighbor.x >= 0 && neighbor.x < width && neighbor.y >= 0 && neighbor.y < height) {
                 // skip used node and obstacle
-                if (!visited[int(neighbor.x)][int(neighbor.y)] && this->ExpansionedMap.data[neighbor.y * width + neighbor.x] <= 50) {
+                if (!visited[int(neighbor.x)][int(neighbor.y)] && this->ExpansionedMap.data[neighbor.y * width + neighbor.x] <= 65) {
                     // move 1 grid
-                    double newDist = distances[int(current.x)][int(current.y)] + 1;
+                    double MoveCost = 0;
+                    for (int i = -4; i <= 4; i++) {
+                        for (int j = -4; j <= 4; j++) {
+                            Coordinate cost = {neighbor.x + i, neighbor.y + j};
+                            if (cost.x >= 0 && cost.x < width && cost.y >= 0 && cost.y < height) {
+                                if (this->ExpansionedMap.data[cost.y * width + cost.x] >=65) {
+                                    double score = 8 - CalDistance(Coordinate {0,0}, Coordinate {double(i),double(j)});
+                                    MoveCost = std::max(MoveCost, score);
+                                }
+                            }
+                        }
+                    }
+                    double newDist = distances[int(current.x)][int(current.y)] + MoveCost + 1;
                     if (newDist < distances[neighbor.x][neighbor.y]) {
                         distances[int(neighbor.x)][int(neighbor.y)] = newDist;
                         parents[int(neighbor.x)][int(neighbor.y)] = current;

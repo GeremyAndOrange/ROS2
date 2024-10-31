@@ -203,6 +203,15 @@ void RobotNode::GetTaskCallBack(rclcpp::Client<interfaces::srv::GetTask>::Shared
         this->robot.state = WORK;
         this->StateChangeTimer->cancel();
     }
+    else {
+        geometry_msgs::msg::Twist info; 
+        info.angular.z = 0;
+        info.linear.x = 0;
+        info.linear.y = 0;
+        this->PublisherMotionControl->publish(info);
+
+        this->robot.state = RELAX;
+    }
 }
 
 void RobotNode::StateChange()
