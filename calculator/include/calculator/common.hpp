@@ -41,6 +41,13 @@ typedef struct _Quaternion {
         z = 0;
         w = 0;
     }
+    _Quaternion(double param_x, double param_y, double param_z, double param_w)
+    {
+        x = param_x;
+        y = param_y;
+        z = param_z;
+        w = param_w;
+    }
 } Quaternion;
 
 typedef struct _EulerDegree {
@@ -69,7 +76,8 @@ typedef struct _CmlSpeed {
 typedef enum _RobotState {
     WORK,
     RELAX,
-    WAIT
+    WAIT,
+    ASTERN
 } RobotState;
 
 typedef struct _RobotInfo {

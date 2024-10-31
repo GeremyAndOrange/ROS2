@@ -58,30 +58,73 @@ void RobotNode::SubOdomInfo(const nav_msgs::msg::Odometry::SharedPtr info)
 void RobotNode::CheckCollision(const sensor_msgs::msg::LaserScan::SharedPtr info)
 {
     // tf laser->basefootprint
+    EulerDegree LaserDeg;
+    try {
+        geometry_msgs::msg::TransformStamped LaserToBaseFootprint;
+        LaserToBaseFootprint = TfBuffer->lookupTransform("robot_" + this->robot.id + "_base_footprint", "robot_" + this->robot.id + "_laser_link", tf2::TimePointZero);
+        auto rotation = LaserToBaseFootprint.transform.rotation;
+        Quaternion quaternion = {rotation.x, rotation.y, rotation.z, rotation.w};
+        GetRPY(quaternion, &LaserDeg);
+    }
+    catch(const tf2::TransformException &error) {
+        RCLCPP_ERROR(this->get_logger(), "TF Exception: %s", error.what());
+        return;
+    }
 
     // calculate valid range
+    double RealAnlgeMin = info->angle_min - LaserDeg.yaw;
 
+    int IndexMin = std::ceil((-std::asin(ROBOT_WIDTH / (info->range_min + 2 * COLLISION_RANGE)) - RealAnlgeMin) / info->angle_increment);
+    int IndexMax = std::ceil(( std::asin(ROBOT_WIDTH / (info->range_min + 2 * COLLISION_RANGE)) - RealAnlgeMin) / info->angle_increment);
+    RCLCPP_INFO(this->get_logger(), "INDEX %d, %d, %f, %f, %f.", IndexMin, IndexMax, RealAnlgeMin, info->range_min, info->angle_increment);
     // calculate is checked
+    int CollisionWarnLevel = 0;     // 0 safe; 1 warn; 2 error
+    for (int i = IndexMin; i < IndexMax; i++) {
+        if (info->ranges[i] > info->range_min && info->ranges[i] < info->range_min + 2 * COLLISION_RANGE) {
+            CollisionWarnLevel = 1;
+        }
+        if (info->ranges[i] > info->range_min && info->ranges[i] < info->range_min + COLLISION_RANGE) {
+            RCLCPP_INFO(this->get_logger(), "IMMEDIATELY COLLIDE, DISTANCE %f.", info->ranges[i]);
+            CollisionWarnLevel = 2;
+            break;
+        }
+    }
 
     // calculate cmd_vel
-    // for (const auto& distance : info->ranges) {
-    //     if (distance < info->range_min + COLLISION_RANGE) {
-    //         RCLCPP_INFO(this->get_logger(), "IMMEDIATELY COLLIDE.");
+    if (CollisionWarnLevel == 2) {
+        EulerDegree OdomDeg;
+        GetRPY(this->robot.quat, &OdomDeg);
+        geometry_msgs::msg::Twist info;
+        info.angular.z = 0;
 
-    //         geometry_msgs::msg::Twist info; 
-    //         info.angular.z = 0;
-    //         info.linear.x = 0;
-    //         info.linear.y = 0;
-    //         this->PublisherMotionControl->publish(info);
+        if (-std::cos(OdomDeg.yaw) * 0.1 > 0) {
+            info.linear.x = std::max(-std::cos(OdomDeg.yaw) * 0.1, 0.05);
+        }
+        else {
+            if (-std::cos(OdomDeg.yaw) * 0.1 < 0) {
+                info.linear.x = std::min(-std::cos(OdomDeg.yaw) * 0.1, -0.05);
+            }
+            else {
+                info.linear.x = OdomDeg.yaw > 0 ? -0.05 : 0.05;
+            }
+        }
+        info.linear.y = -std::sin(OdomDeg.yaw) * 0.1 > 0 ? std::max(-std::sin(OdomDeg.yaw) * 0.1, 0.05) : std::min(-std::sin(OdomDeg.yaw) * 0.1, -0.05);
 
-    //         this->path.clear();
-    //         this->robot.state = RELAX;
-    //     }
-    // }
+        this->PublisherMotionControl->publish(info);
+
+        this->path.clear();
+        this->robot.state = ASTERN;
+    }
+    else {
+        if (CollisionWarnLevel == 0 && this->robot.state == ASTERN) {
+            this->robot.state = RELAX;
+        }
+    }
 }
 
 void RobotNode::PubMotionControl()
 {
+    // RCLCPP_ERROR(this->get_logger(), "RIGHT NOW TARGET POINT IS %f, %f.", this->path[0].x, this->path[0].y);
     CmlSpeed speed;
     CalSpeed(CoorTrans(this->robot.coor,this->robot.tf),this->path[0],this->robot.quat,&speed);
     geometry_msgs::msg::Twist info;

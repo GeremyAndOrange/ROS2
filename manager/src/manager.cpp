@@ -46,14 +46,14 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
 
     // odom -> world
     Coordinate PointInMap;
-    geometry_msgs::msg::TransformStamped odomToWorld;
+    geometry_msgs::msg::TransformStamped OdomToWorld;
     try {
-        odomToWorld = TfBuffer->lookupTransform("world", "robot_" + robot.id + "_odom", tf2::TimePointZero);
+        OdomToWorld = TfBuffer->lookupTransform("world", "robot_" + robot.id + "_odom", tf2::TimePointZero);
         
         // coordinate in world
         Coordinate PositionInWorld;
-        PositionInWorld.x = robot.coor.x + odomToWorld.transform.translation.x;
-        PositionInWorld.y = robot.coor.y + odomToWorld.transform.translation.y;
+        PositionInWorld.x = robot.coor.x + OdomToWorld.transform.translation.x;
+        PositionInWorld.y = robot.coor.y + OdomToWorld.transform.translation.y;
 
         // coordinate in map
         Coordinate PositionInMap;
@@ -340,7 +340,7 @@ bool ManagerNode::DijsktraAlgorithm(Coordinate SourcePoint, Coordinate TargetPoi
             Coordinate neighbor = {current.x + dir.x, current.y + dir.y};
             if (neighbor.x >= 0 && neighbor.x < width && neighbor.y >= 0 && neighbor.y < height) {
                 // skip used node and obstacle
-                if (visited[int(neighbor.x)][int(neighbor.y)] || this->ExpansionedMap.data[neighbor.y * width + neighbor.x] <= 50) {
+                if (!visited[int(neighbor.x)][int(neighbor.y)] && this->ExpansionedMap.data[neighbor.y * width + neighbor.x] <= 50) {
                     // move 1 grid
                     double newDist = distances[int(current.x)][int(current.y)] + 1;
                     if (newDist < distances[neighbor.x][neighbor.y]) {
