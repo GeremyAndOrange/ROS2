@@ -77,37 +77,64 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
     std::vector<Coordinate> BoundaryPoints;                             // coordinate in map
     bRets = ScanBoundary(PointInMap, BoundaryPoints);
 
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = "world";
-    marker.header.stamp = this->get_clock()->now();
-    marker.ns = "boundary";
-    marker.id = 0;
-    marker.type = visualization_msgs::msg::Marker::POINTS;
-    marker.action = visualization_msgs::msg::Marker::ADD;
+    visualization_msgs::msg::Marker BoundaryMarker;
+    BoundaryMarker.header.frame_id = "world";
+    BoundaryMarker.header.stamp = this->get_clock()->now();
+    BoundaryMarker.ns = "boundary";
+    BoundaryMarker.id = 0;
+    BoundaryMarker.type = visualization_msgs::msg::Marker::POINTS;
+    BoundaryMarker.action = visualization_msgs::msg::Marker::ADD;
 
-    marker.scale.x = 0.02;
-    marker.scale.y = 0.02;
-    marker.scale.z = 0;
+    BoundaryMarker.scale.x = 0.05;
+    BoundaryMarker.scale.y = 0.05;
+    BoundaryMarker.scale.z = 0;
 
-    marker.color.a = 1.0;
-    marker.color.r = 0.0;
-    marker.color.g = 1.0;
-    marker.color.b = 0.0;
+    BoundaryMarker.color.a = 1.0;
+    BoundaryMarker.color.r = 0.0;
+    BoundaryMarker.color.g = 1.0;
+    BoundaryMarker.color.b = 0.0;
 
     for (const auto& point : BoundaryPoints) {
         geometry_msgs::msg::Point AddedPoint;
         AddedPoint.x = point.x * this->ExpansionedMap.info.resolution + this->ExpansionedMap.info.origin.position.x;
         AddedPoint.y = point.y * this->ExpansionedMap.info.resolution + this->ExpansionedMap.info.origin.position.y;
         AddedPoint.z = 0;
-        marker.points.push_back(AddedPoint);
+        BoundaryMarker.points.push_back(AddedPoint);
     }
-    this->PublisherBoundaryPoints->publish(marker);
+    this->PublisherBoundaryPoints->publish(BoundaryMarker);
 
     if (bRets) {
         // calculate nearest task point
         Coordinate TargetPoint;
         std::vector<Coordinate> TaskPoints;
         bRets = AggregateTask(BoundaryPoints, TaskPoints);
+
+        visualization_msgs::msg::Marker TaskMarker;
+        TaskMarker.header.frame_id = "world";
+        TaskMarker.header.stamp = this->get_clock()->now();
+        TaskMarker.ns = "task";
+        TaskMarker.id = 1;
+        TaskMarker.type = visualization_msgs::msg::Marker::POINTS;
+        TaskMarker.action = visualization_msgs::msg::Marker::ADD;
+
+        TaskMarker.scale.x = 0.05;
+        TaskMarker.scale.y = 0.05;
+        TaskMarker.scale.z = 0;
+
+        TaskMarker.color.a = 1.0;
+        TaskMarker.color.r = 0.0;
+        TaskMarker.color.g = 1.0;
+        TaskMarker.color.b = 1.0;
+
+        for (const auto& point : TaskPoints) {
+            geometry_msgs::msg::Point AddedPoint;
+            AddedPoint.x = point.x * this->ExpansionedMap.info.resolution + this->ExpansionedMap.info.origin.position.x;
+            AddedPoint.y = point.y * this->ExpansionedMap.info.resolution + this->ExpansionedMap.info.origin.position.y;
+            AddedPoint.z = 0;
+            TaskMarker.points.push_back(AddedPoint);
+        }
+        this->PublisherBoundaryPoints->publish(TaskMarker);
+
         if (bRets) {
             double MinDist = std::numeric_limits<double>::max();
             for (const auto& task : TaskPoints) {
@@ -222,7 +249,7 @@ bool ManagerNode::ScanBoundary(Coordinate PointInMap, std::vector<Coordinate>& B
     srand(static_cast<unsigned int>(time(nullptr)));
 
     int StepSize = int(std::round(RRT_STEP_SIZE / this->ExpansionedMap.info.resolution));
-    int MaxIteration = int(std::round((this->ExpansionedMap.info.width / StepSize))) * int(std::round((this->ExpansionedMap.info.height / StepSize)));
+    int MaxIteration = 6 * int(std::round((this->ExpansionedMap.info.width / StepSize))) * int(std::round((this->ExpansionedMap.info.height / StepSize)));
     for (int i = 0; i < MaxIteration; i++) {
         Coordinate RandomPoint = GenerateRandomNode();
         Coordinate NearestPoint = RRTree[0];
@@ -292,7 +319,16 @@ Coordinate ManagerNode::FindNewNode(Coordinate LastNode, Coordinate NextNode)
 bool ManagerNode::AggregateTask(const std::vector<Coordinate>& BoundaryPoints, std::vector<Coordinate>& TaskPoints)
 {
     int CentroidsNum =  2 * this->RobotGroup.size();
-    std::vector<Coordinate> centroids(CentroidsNum);
+    if (int(BoundaryPoints.size()) < CentroidsNum) {
+        return false;
+    }
+
+    std::vector<Coordinate> centroids;
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
+    for (int i = 0; i < CentroidsNum; i++) {
+        int index = std::rand() % BoundaryPoints.size();
+        centroids.push_back(BoundaryPoints[index]);
+    }
 
     int IterationCount = 0;
     bool converged = false;
