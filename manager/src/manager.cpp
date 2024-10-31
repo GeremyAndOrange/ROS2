@@ -24,6 +24,7 @@ void ManagerNode::Initial()
     // topic
     this->SubscriptionGLobalMap = this->create_subscription<nav_msgs::msg::OccupancyGrid>("/globalmap",10,std::bind(&ManagerNode::SubMap,this,_1));
     this->PublisherExpansionedMap = this->create_publisher<nav_msgs::msg::OccupancyGrid>("/expansion_map",10);
+    this->PublisherBoundaryPoints = this->create_publisher<visualization_msgs::msg::Marker>("/boundary", 10);
 
     // timer
     
@@ -75,6 +76,33 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
     bool bRets = false;
     std::vector<Coordinate> BoundaryPoints;                             // coordinate in map
     bRets = ScanBoundary(PointInMap, BoundaryPoints);
+
+    visualization_msgs::msg::Marker marker;
+    marker.header.frame_id = "world";
+    marker.header.stamp = this->get_clock()->now();
+    marker.ns = "boundary";
+    marker.id = 0;
+    marker.type = visualization_msgs::msg::Marker::POINTS;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+
+    marker.scale.x = 0.02;
+    marker.scale.y = 0.02;
+    marker.scale.z = 0;
+
+    marker.color.a = 1.0;
+    marker.color.r = 0.0;
+    marker.color.g = 1.0;
+    marker.color.b = 0.0;
+
+    for (const auto& point : BoundaryPoints) {
+        geometry_msgs::msg::Point AddedPoint;
+        AddedPoint.x = point.x * this->ExpansionedMap.info.resolution + this->ExpansionedMap.info.origin.position.x;
+        AddedPoint.y = point.y * this->ExpansionedMap.info.resolution + this->ExpansionedMap.info.origin.position.y;
+        AddedPoint.z = 0;
+        marker.points.push_back(AddedPoint);
+    }
+    this->PublisherBoundaryPoints->publish(marker);
+
     if (bRets) {
         // calculate nearest task point
         Coordinate TargetPoint;
@@ -209,7 +237,7 @@ bool ManagerNode::ScanBoundary(Coordinate PointInMap, std::vector<Coordinate>& B
         Coordinate NewPoint = FindNewNode(NearestPoint, RandomPoint);
 
         if (IsValidPoint(NewPoint)) {
-            if (IsValidPoint(NearestPoint) && this->ExpansionedMap.data[int(NearestPoint.y) * this->ExpansionedMap.info.width + (NearestPoint.x)] != -1) {
+            if (this->ExpansionedMap.data[int(NearestPoint.y) * this->ExpansionedMap.info.width + (NearestPoint.x)] != -1) {
                 RRTree.push_back(NewPoint);
                 if (this->ExpansionedMap.data[int(NewPoint.y) * this->ExpansionedMap.info.width + int(NewPoint.x)] == -1) {
                     BoundaryPoints.push_back(NewPoint); 

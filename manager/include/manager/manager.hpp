@@ -48,9 +48,10 @@ private:
     // topic
     rclcpp::Subscription<nav_msgs::msg::OccupancyGrid>::SharedPtr SubscriptionGLobalMap;
     rclcpp::Publisher<nav_msgs::msg::OccupancyGrid>::SharedPtr PublisherExpansionedMap;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr PublisherBoundaryPoints;
 
     // timer
-    
+
 };
 
 #endif

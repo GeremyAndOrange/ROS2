@@ -124,7 +124,7 @@ void RobotNode::PubMotionControl()
     marker.header.frame_id = "world";
     marker.header.stamp = this->get_clock()->now();
     marker.ns = "robot_" + this->robot.id;
-    marker.id = 0;
+    marker.id = std::stoi(this->robot.id) + 1;
     marker.type = visualization_msgs::msg::Marker::POINTS;
     marker.action = visualization_msgs::msg::Marker::ADD;
 

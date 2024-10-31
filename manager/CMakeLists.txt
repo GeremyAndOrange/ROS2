@@ -12,6 +12,7 @@ find_package(nav_msgs REQUIRED)
 find_package(interfaces REQUIRED)
 find_package(calculator REQUIRED)
 find_package(tf2_ros REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 # find header files
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -51,6 +52,7 @@ ament_target_dependencies(manager_node
   calculator
   nav_msgs
   tf2_ros
+  visualization_msgs
 )
 
 install(TARGETS
@@ -70,6 +72,7 @@ ament_target_dependencies(manager
   calculator
   nav_msgs
   tf2_ros
+  visualization_msgs
 )
 install(
   TARGETS manager
