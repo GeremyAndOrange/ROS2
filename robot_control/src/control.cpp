@@ -24,6 +24,7 @@ void RobotNode::InitialVariable()
 
     // topic
     this->PublisherMotionControl = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
+    this->PublisherPathPoints = this->create_publisher<visualization_msgs::msg::Marker>("path_points", 10);
     this->SubscriptionOdomInfo = this->create_subscription<nav_msgs::msg::Odometry>("odom",10,std::bind(&RobotNode::SubOdomInfo,this,_1));
     this->SubscriptionLaserInfo = this->create_subscription<sensor_msgs::msg::LaserScan>("scan",10,std::bind(&RobotNode::CheckCollision,this,_1));
 
@@ -76,11 +77,10 @@ void RobotNode::CheckCollision(const sensor_msgs::msg::LaserScan::SharedPtr info
 
     int IndexMin = std::ceil((-std::asin(ROBOT_WIDTH / (info->range_min + 2 * COLLISION_RANGE)) - RealAnlgeMin) / info->angle_increment);
     int IndexMax = std::ceil(( std::asin(ROBOT_WIDTH / (info->range_min + 2 * COLLISION_RANGE)) - RealAnlgeMin) / info->angle_increment);
-    RCLCPP_INFO(this->get_logger(), "INDEX %d, %d, %f, %f, %f.", IndexMin, IndexMax, RealAnlgeMin, info->range_min, info->angle_increment);
     // calculate is checked
     int CollisionWarnLevel = 0;     // 0 safe; 1 warn; 2 error
     for (int i = IndexMin; i < IndexMax; i++) {
-        if (info->ranges[i] > info->range_min && info->ranges[i] < info->range_min + 2 * COLLISION_RANGE) {
+        if (info->ranges[i] > info->range_min && info->ranges[i] < info->range_min + 3 * COLLISION_RANGE) {
             CollisionWarnLevel = 1;
         }
         if (info->ranges[i] > info->range_min && info->ranges[i] < info->range_min + COLLISION_RANGE) {
@@ -92,28 +92,14 @@ void RobotNode::CheckCollision(const sensor_msgs::msg::LaserScan::SharedPtr info
 
     // calculate cmd_vel
     if (CollisionWarnLevel == 2) {
-        EulerDegree OdomDeg;
-        GetRPY(this->robot.quat, &OdomDeg);
-        geometry_msgs::msg::Twist info;
-        info.angular.z = 0;
-
-        if (-std::cos(OdomDeg.yaw) * 0.1 > 0) {
-            info.linear.x = std::max(-std::cos(OdomDeg.yaw) * 0.1, 0.05);
-        }
-        else {
-            if (-std::cos(OdomDeg.yaw) * 0.1 < 0) {
-                info.linear.x = std::min(-std::cos(OdomDeg.yaw) * 0.1, -0.05);
-            }
-            else {
-                info.linear.x = OdomDeg.yaw > 0 ? -0.05 : 0.05;
-            }
-        }
-        info.linear.y = -std::sin(OdomDeg.yaw) * 0.1 > 0 ? std::max(-std::sin(OdomDeg.yaw) * 0.1, 0.05) : std::min(-std::sin(OdomDeg.yaw) * 0.1, -0.05);
-
-        this->PublisherMotionControl->publish(info);
-
         this->path.clear();
         this->robot.state = ASTERN;
+
+        geometry_msgs::msg::Twist info;
+        info.angular.z = 0;
+        info.linear.y = 0;
+        info.linear.x = -0.2;
+        this->PublisherMotionControl->publish(info);
     }
     else {
         if (CollisionWarnLevel == 0 && this->robot.state == ASTERN) {
@@ -133,11 +119,38 @@ void RobotNode::PubMotionControl()
     info.linear.y = speed.linear[1];
 
     this->PublisherMotionControl->publish(info);
+
+    visualization_msgs::msg::Marker marker;
+    marker.header.frame_id = "world";
+    marker.header.stamp = this->get_clock()->now();
+    marker.ns = "robot_" + this->robot.id;
+    marker.id = 0;
+    marker.type = visualization_msgs::msg::Marker::POINTS;
+    marker.action = visualization_msgs::msg::Marker::ADD;
+
+    marker.scale.x = 0.1;
+    marker.scale.y = 0.1;
+    marker.scale.z = 0.1;
+
+    marker.color.a = 1.0;
+    marker.color.r = 1.0;
+    marker.color.g = 0.0;
+    marker.color.b = 0.0;
+
+    for (const auto& point : this->path) {
+        geometry_msgs::msg::Point AddedPoint;
+        AddedPoint.x = point.x;
+        AddedPoint.y = point.y;
+        AddedPoint.z = 0;
+        marker.points.push_back(AddedPoint);
+    }
+
+    this->PublisherPathPoints->publish(marker);
 }
 
 void RobotNode::UpdatePathInfo()
 {
-    if (CalDistance(CoorTrans(this->robot.coor,this->robot.tf), this->path[0]) < PRECISION_1) {
+    if (CalDistance(CoorTrans(this->robot.coor,this->robot.tf), this->path[0]) < 5 * PRECISION_2) {
         this->path.erase(this->path.begin());
         if (this->path.empty()) {
             geometry_msgs::msg::Twist info; 

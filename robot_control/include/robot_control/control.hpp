@@ -49,6 +49,7 @@ private:
 
     // topic
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr PublisherMotionControl;
+    rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr PublisherPathPoints;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr SubscriptionOdomInfo;
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr SubscriptionLaserInfo;
 

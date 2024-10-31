@@ -8,16 +8,16 @@
 #define PRECISION_2 0.01
 #define PRECISION_3 0.001
 #define PRECISION_4 0.0001
-#define ANGULAR_SPEED_MAX 0.2
-#define LINEAR_SPEED_MIN 0.1
+#define ANGULAR_SPEED_MAX 0.4
+#define LINEAR_SPEED_MIN 0.2
 
 // MAP DEFINE
 #define EXPANSION_RADIUS 0.15             // ROBOT WIDTH /m
-#define RRT_STEP_SIZE 0.2                 // 2*EXPANSION_RADIUS /m
+#define RRT_STEP_SIZE 0.3                 // 2*EXPANSION_RADIUS /m
 #define KMEANS_ITERATION 1e4
 
 // ROBOT STATE
-#define COLLISION_RANGE 0.1
+#define COLLISION_RANGE 0.05
 #define ROBOT_WIDTH 0.15
 
 #endif

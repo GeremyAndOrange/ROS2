@@ -16,6 +16,7 @@ find_package(geometry_msgs REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(calculator REQUIRED)
+find_package(visualization_msgs REQUIRED)
 
 # find header files
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -47,6 +48,7 @@ ament_target_dependencies(robot_node
   tf2_ros
   tf2_sensor_msgs
   tf2_geometry_msgs
+  visualization_msgs
 )
 
 install(TARGETS

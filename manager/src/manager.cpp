@@ -107,6 +107,18 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
                     TaskPathPlanning.erase(TaskPathPlanning.begin() + *it);
                 }
 
+                RemoveIndex.clear();
+                for (size_t i = 1; i <TaskPathPlanning.size()-1; i++) {
+                    Coordinate NextPoint = TaskPathPlanning[i+1];
+                    Coordinate CurrentPoint = TaskPathPlanning[i];
+                    if (CalDistance(CurrentPoint, NextPoint) < 3) {
+                        RemoveIndex.push_back(i);
+                    }
+                }
+                for (auto it = RemoveIndex.rbegin(); it != RemoveIndex.rend(); ++it) {
+                    TaskPathPlanning.erase(TaskPathPlanning.begin() + *it);
+                }
+
                 // send task path
                 std::vector<double> target_path;
                 for (const auto& point : TaskPathPlanning) {
@@ -249,7 +261,7 @@ Coordinate ManagerNode::FindNewNode(Coordinate LastNode, Coordinate NextNode)
 bool ManagerNode::AggregateTask(const std::vector<Coordinate>& BoundaryPoints, std::vector<Coordinate>& TaskPoints)
 {
     int RobotNum = this->RobotGroup.size();
-    std::vector<Coordinate> centroids(RobotNum);
+    std::vector<Coordinate> centroids(RobotNum * 2);
 
     int IterationCount = 0;
     bool converged = false;
