@@ -37,7 +37,7 @@ private:
 private:
     //property
     RobotInfo robot;
-    std::vector<Coordinate> path;
+    std::pair<bool, std::vector<Coordinate>> path;
 
     // ptr
     std::unique_ptr<tf2_ros::Buffer> TfBuffer;

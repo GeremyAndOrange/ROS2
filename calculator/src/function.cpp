@@ -17,13 +17,13 @@ void CalSpeed(Coordinate start_point, Coordinate end_point, Quaternion quaternio
     GetRPY(quaternion, &euler_degree);
     double delta_yaw_theta = fmod(target_yaw_theta - euler_degree.yaw + M_PI, 2 * M_PI) - M_PI;
 
-    if (delta_yaw_theta > -0.2 && delta_yaw_theta < 0.2) {
-        return_speed->angular = std::min(2 * delta_yaw_theta, ANGULAR_SPEED_MAX);
+    if (delta_yaw_theta > -ANGULAR_SPEED_MAX && delta_yaw_theta < ANGULAR_SPEED_MAX) {
+        return_speed->angular = delta_yaw_theta > 0 ? std::min(2 * delta_yaw_theta, ANGULAR_SPEED_MAX) : std::max(2 * delta_yaw_theta, -ANGULAR_SPEED_MAX);
         return_speed->linear[0] = std::max(0.1 * delta_x, LINEAR_SPEED_MIN);
         return_speed->linear[1] = std::max(0.1 * delta_y, LINEAR_SPEED_MIN);
     }
     else {
-        return_speed->angular = std::min(2 * delta_yaw_theta, ANGULAR_SPEED_MAX);
+        return_speed->angular = delta_yaw_theta > 0 ? std::max(2 * delta_yaw_theta, ANGULAR_SPEED_MAX) : std::min(2 * delta_yaw_theta, -ANGULAR_SPEED_MAX);
         return_speed->linear[0] = 0;
         return_speed->linear[1] = 0;
     }

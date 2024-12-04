@@ -117,8 +117,8 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
         TaskMarker.type = visualization_msgs::msg::Marker::POINTS;
         TaskMarker.action = visualization_msgs::msg::Marker::ADD;
 
-        TaskMarker.scale.x = 0.05;
-        TaskMarker.scale.y = 0.05;
+        TaskMarker.scale.x = 0.15;
+        TaskMarker.scale.y = 0.15;
         TaskMarker.scale.z = 0;
 
         TaskMarker.color.a = 1.0;
@@ -136,19 +136,54 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
         this->PublisherBoundaryPoints->publish(TaskMarker);
 
         if (bRets) {
-            double MinDist = std::numeric_limits<double>::max();
-            for (const auto& task : TaskPoints) {
-                double dist = CalDistance(robot.coor, task);
-                if (dist < MinDist) {
-                    TargetPoint = task;                                 // coordinate in map
+            // calculate path planning
+            std::vector<Coordinate> TaskPathPlanning;
+            while (!TaskPoints.empty()) {
+                double MinDist = std::numeric_limits<double>::max();
+                for (const auto& task : TaskPoints) {
+                    double dist = CalDistance(robot.coor, task);
+                    if (dist < MinDist) {
+                        TargetPoint = task;                                 // coordinate in map
+                    }
+                }
+
+                bRets = DijsktraAlgorithm(PointInMap, TargetPoint, TaskPathPlanning);
+                if (bRets) {
+                    break;
+                } else {
+                    auto it = std::find(TaskPoints.begin(), TaskPoints.end(), TargetPoint);
+                    if (it != TaskPoints.end()) {
+                        TaskPoints.erase(it);
+                    }
                 }
             }
             RCLCPP_INFO(this->get_logger(), "TASK POINT %f, %f.", TargetPoint.x, TargetPoint.y);
 
-            // calculate path planning
-            std::vector<Coordinate> TaskPathPlanning;
-            bRets = DijsktraAlgorithm(PointInMap, TargetPoint, TaskPathPlanning);
             if (bRets) {
+                visualization_msgs::msg::Marker TargetMarker;
+                TargetMarker.header.frame_id = "world";
+                TargetMarker.header.stamp = this->get_clock()->now();
+                TargetMarker.ns = "target";
+                TargetMarker.id = 2;
+                TargetMarker.type = visualization_msgs::msg::Marker::POINTS;
+                TargetMarker.action = visualization_msgs::msg::Marker::ADD;
+
+                TargetMarker.scale.x = 0.15;
+                TargetMarker.scale.y = 0.15;
+                TargetMarker.scale.z = 0;
+
+                TargetMarker.color.a = 1.0;
+                TargetMarker.color.r = 1.0;
+                TargetMarker.color.g = 1.0;
+                TargetMarker.color.b = 1.0;
+
+                geometry_msgs::msg::Point AddedTargetPoint;
+                AddedTargetPoint.x = TargetPoint.x * this->ExpansionedMap.info.resolution + this->ExpansionedMap.info.origin.position.x;
+                AddedTargetPoint.y = TargetPoint.y * this->ExpansionedMap.info.resolution + this->ExpansionedMap.info.origin.position.y;
+                AddedTargetPoint.z = 0;
+                TargetMarker.points.push_back(AddedTargetPoint);
+                this->PublisherBoundaryPoints->publish(TargetMarker);
+
                 // skip path points
                 std::vector<int> RemoveIndex;
                 for (size_t i = 1; i <TaskPathPlanning.size()-1; i++) {
@@ -164,7 +199,7 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
                 }
 
                 RemoveIndex.clear();
-                for (size_t i = 1; i <TaskPathPlanning.size()-1; i++) {
+                for (size_t i = 0; i <TaskPathPlanning.size()-1; i++) {
                     Coordinate NextPoint = TaskPathPlanning[i+1];
                     Coordinate CurrentPoint = TaskPathPlanning[i];
                     if (CalDistance(CurrentPoint, NextPoint) < 3) {
@@ -225,8 +260,8 @@ void ManagerNode::ExpansionMap()
     for (size_t y = 0; y < height; y++) {
         for (size_t x = 0; x < width; x++) {
             if (this->StoredMap.data[y * width + x] > 65) {
-                for (int dy = -ExpansionRadius; dy <= ExpansionRadius; ++dy) {
-                    for (int dx = -ExpansionRadius; dx <= ExpansionRadius; ++dx) {
+                for (int dy = -1.5 * ExpansionRadius; dy <= 1.5 * ExpansionRadius; ++dy) {
+                    for (int dx = -1.5 * ExpansionRadius; dx <= 1.5 * ExpansionRadius; ++dx) {
                         if (this->StoredMap.data[(y+dy) * width + (x+dx)] < 65) {
                             if ((x+dx) > 0 && (x+dx) < width && (y+dy) > 0 && (y+dy) < height) {
                                 this->ExpansionedMap.data[(y+dy) * width + (x+dx)] = 75;
@@ -318,7 +353,7 @@ Coordinate ManagerNode::FindNewNode(Coordinate LastNode, Coordinate NextNode)
 
 bool ManagerNode::AggregateTask(const std::vector<Coordinate>& BoundaryPoints, std::vector<Coordinate>& TaskPoints)
 {
-    int CentroidsNum =  2 * this->RobotGroup.size();
+    int CentroidsNum =  4 * this->RobotGroup.size();
     if (int(BoundaryPoints.size()) < CentroidsNum) {
         return false;
     }
@@ -419,21 +454,8 @@ bool ManagerNode::DijsktraAlgorithm(Coordinate SourcePoint, Coordinate TargetPoi
             Coordinate neighbor = {current.x + dir.x, current.y + dir.y};
             if (neighbor.x >= 0 && neighbor.x < width && neighbor.y >= 0 && neighbor.y < height) {
                 // skip used node and obstacle
-                if (!visited[int(neighbor.x)][int(neighbor.y)] && this->ExpansionedMap.data[neighbor.y * width + neighbor.x] <= 65) {
-                    // move 1 grid
-                    double MoveCost = 0;
-                    for (int i = -4; i <= 4; i++) {
-                        for (int j = -4; j <= 4; j++) {
-                            Coordinate cost = {neighbor.x + i, neighbor.y + j};
-                            if (cost.x >= 0 && cost.x < width && cost.y >= 0 && cost.y < height) {
-                                if (this->ExpansionedMap.data[cost.y * width + cost.x] >=65) {
-                                    double score = 8 - CalDistance(Coordinate {0,0}, Coordinate {double(i),double(j)});
-                                    MoveCost = std::max(MoveCost, score);
-                                }
-                            }
-                        }
-                    }
-                    double newDist = distances[int(current.x)][int(current.y)] + MoveCost + 1;
+                if (!visited[int(neighbor.x)][int(neighbor.y)] && (this->ExpansionedMap.data[neighbor.y * width + neighbor.x] <= 65 || this->ExpansionedMap.data[neighbor.y * width + neighbor.x] == 75)) {
+                    double newDist = distances[int(current.x)][int(current.y)] + 1 + (this->ExpansionedMap.data[neighbor.y * width + neighbor.x] == 75 ? 100 : 0);
                     if (newDist < distances[neighbor.x][neighbor.y]) {
                         distances[int(neighbor.x)][int(neighbor.y)] = newDist;
                         parents[int(neighbor.x)][int(neighbor.y)] = current;

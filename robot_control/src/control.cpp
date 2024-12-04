@@ -92,7 +92,7 @@ void RobotNode::CheckCollision(const sensor_msgs::msg::LaserScan::SharedPtr info
 
     // calculate cmd_vel
     if (CollisionWarnLevel == 2) {
-        this->path.clear();
+        this->path.second.clear();
         this->robot.state = ASTERN;
 
         geometry_msgs::msg::Twist info;
@@ -112,7 +112,7 @@ void RobotNode::PubMotionControl()
 {
     // RCLCPP_ERROR(this->get_logger(), "RIGHT NOW TARGET POINT IS %f, %f.", this->path[0].x, this->path[0].y);
     CmlSpeed speed;
-    CalSpeed(CoorTrans(this->robot.coor,this->robot.tf),this->path[0],this->robot.quat,&speed);
+    CalSpeed(CoorTrans(this->robot.coor,this->robot.tf),this->path.second[0],this->robot.quat,&speed);
     geometry_msgs::msg::Twist info;
     info.angular.z = speed.angular;
     info.linear.x = speed.linear[0];
@@ -137,7 +137,7 @@ void RobotNode::PubMotionControl()
     marker.color.g = 0.0;
     marker.color.b = 0.0;
 
-    for (const auto& point : this->path) {
+    for (const auto& point : this->path.second) {
         geometry_msgs::msg::Point AddedPoint;
         AddedPoint.x = point.x;
         AddedPoint.y = point.y;
@@ -150,9 +150,9 @@ void RobotNode::PubMotionControl()
 
 void RobotNode::UpdatePathInfo()
 {
-    if (CalDistance(CoorTrans(this->robot.coor,this->robot.tf), this->path[0]) < 5 * PRECISION_2) {
-        this->path.erase(this->path.begin());
-        if (this->path.empty()) {
+    if (CalDistance(CoorTrans(this->robot.coor,this->robot.tf), this->path.second[0]) < 5 * PRECISION_2) {
+        this->path.second.erase(this->path.second.begin());
+        if (this->path.second.empty()) {
             geometry_msgs::msg::Twist info; 
             info.angular.z = 0;
             info.linear.x = 0;
@@ -194,12 +194,13 @@ void RobotNode::GetTaskCallBack(rclcpp::Client<interfaces::srv::GetTask>::Shared
     Coordinate coordinate;
     auto result = response.get();
 
-    if (result->is_path) {
+    if (result->is_path && this->robot.state != WORK) {
         for (size_t i = 0; i < result->path.size(); i += 2) {
             coordinate.x = result->path[i];
             coordinate.y = result->path[i+1];
-            this->path.push_back(coordinate);
+            this->path.second.push_back(coordinate);
         }
+        this->path.first = false;
         this->robot.state = WORK;
         this->StateChangeTimer->cancel();
     }

@@ -77,7 +77,8 @@ def generate_launch_description():
         name = 'cartographer',
         arguments = [
             '-configuration_directory', cartographer_share,
-            '-configuration_basename', cartohrapher_config
+            '-configuration_basename', cartohrapher_config,
+            '-minloglevel', '2'
         ],
         parameters = [
             {'use_sim_time': True}
@@ -99,7 +100,7 @@ def generate_launch_description():
         executable='rviz2',
         name='rviz2',
         output='screen',
-        )
+    )
 
     launch_description.add_action(xacro_command)
     launch_description.add_action(config_command)
