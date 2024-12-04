@@ -144,6 +144,7 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
                     double dist = CalDistance(robot.coor, task);
                     if (dist < MinDist) {
                         TargetPoint = task;                                 // coordinate in map
+                        MinDist = dist;
                     }
                 }
 
@@ -202,18 +203,18 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
                 for (size_t i = 0; i <TaskPathPlanning.size()-1; i++) {
                     Coordinate NextPoint = TaskPathPlanning[i+1];
                     Coordinate CurrentPoint = TaskPathPlanning[i];
-                    if (CalDistance(CurrentPoint, NextPoint) < 3) {
+                    if (CalDistance(CurrentPoint, NextPoint) <= 3) {
                         RemoveIndex.push_back(i);
                     }
                 }
                 for (auto it = RemoveIndex.rbegin(); it != RemoveIndex.rend(); ++it) {
                     TaskPathPlanning.erase(TaskPathPlanning.begin() + *it);
                 }
+                TaskPathPlanning.erase(TaskPathPlanning.begin());
 
                 // send task path
                 std::vector<double> target_path;
                 for (const auto& point : TaskPathPlanning) {
-                    RCLCPP_INFO(this->get_logger(), "PATH POINT. %f, %f", point.x, point.y);
                     Coordinate TargetRealPotion;
                     TargetRealPotion.x = point.x * this->ExpansionedMap.info.resolution + this->ExpansionedMap.info.origin.position.x;
                     TargetRealPotion.y = point.y * this->ExpansionedMap.info.resolution + this->ExpansionedMap.info.origin.position.y;
@@ -299,9 +300,10 @@ bool ManagerNode::ScanBoundary(Coordinate PointInMap, std::vector<Coordinate>& B
         Coordinate NewPoint = FindNewNode(NearestPoint, RandomPoint);
 
         if (IsValidPoint(NewPoint)) {
-            if (this->ExpansionedMap.data[int(NearestPoint.y) * this->ExpansionedMap.info.width + (NearestPoint.x)] != -1) {
+            int MapValue = this->ExpansionedMap.data[int(NearestPoint.y) * this->ExpansionedMap.info.width + (NearestPoint.x)];
+            if (MapValue != -1) {
                 RRTree.push_back(NewPoint);
-                if (this->ExpansionedMap.data[int(NewPoint.y) * this->ExpansionedMap.info.width + int(NewPoint.x)] == -1) {
+                if (this->ExpansionedMap.data[int(NewPoint.y) * this->ExpansionedMap.info.width + int(NewPoint.x)] == -1  && MapValue != 75) {
                     BoundaryPoints.push_back(NewPoint); 
                 }
             }
@@ -324,7 +326,7 @@ bool ManagerNode::IsValidPoint(Coordinate point)
 
     uint32_t x = uint32_t(point.x);
     uint32_t y = uint32_t(point.y);
-    return  x < width && y < height && this->ExpansionedMap.data[y * width + x] <= 65;
+    return  x < width && y < height && (this->ExpansionedMap.data[y * width + x] <= 65 || this->ExpansionedMap.data[y * width + x] == 75);
 }
 
 Coordinate ManagerNode::GenerateRandomNode()

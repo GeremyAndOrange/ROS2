@@ -137,6 +137,7 @@ void RobotNode::PubMotionControl()
     marker.color.g = 0.0;
     marker.color.b = 0.0;
 
+    marker.points.clear();
     for (const auto& point : this->path.second) {
         geometry_msgs::msg::Point AddedPoint;
         AddedPoint.x = point.x;
@@ -194,15 +195,19 @@ void RobotNode::GetTaskCallBack(rclcpp::Client<interfaces::srv::GetTask>::Shared
     Coordinate coordinate;
     auto result = response.get();
 
-    if (result->is_path && this->robot.state != WORK) {
-        for (size_t i = 0; i < result->path.size(); i += 2) {
-            coordinate.x = result->path[i];
-            coordinate.y = result->path[i+1];
-            this->path.second.push_back(coordinate);
+    if (result->is_path) {
+        if (this->robot.state != WORK) {
+            this->path.second.clear();
+            for (size_t i = 0; i < result->path.size(); i += 2) {
+                coordinate.x = result->path[i];
+                coordinate.y = result->path[i+1];
+                this->path.second.push_back(coordinate);
+                RCLCPP_INFO(this->get_logger(), "PATH POINT. %f, %f", coordinate.x, coordinate.y);
+            }
+            this->path.first = false;
+            this->robot.state = WORK;
+            this->StateChangeTimer->cancel();
         }
-        this->path.first = false;
-        this->robot.state = WORK;
-        this->StateChangeTimer->cancel();
     }
     else {
         geometry_msgs::msg::Twist info; 
