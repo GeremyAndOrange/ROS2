@@ -30,7 +30,7 @@ void RobotNode::InitialVariable()
 
     // timer
     this->CheckStateTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::CheckState,this));
-    this->StateChangeTimer = this->create_wall_timer(std::chrono::seconds(2), std::bind(&RobotNode::StateChange,this));
+    this->StateChangeTimer = this->create_wall_timer(std::chrono::seconds(3), std::bind(&RobotNode::StateChange,this));
     this->TfTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::TfBroadcast,this));
 }
 
@@ -47,14 +47,25 @@ void RobotNode::GetParameter()
 
 void RobotNode::SubOdomInfo(const nav_msgs::msg::Odometry::SharedPtr info)
 {
-    this->robot.coor.x = info->pose.pose.position.x;
-    this->robot.coor.y = info->pose.pose.position.y;
-
     this->robot.quat.x = info->pose.pose.orientation.x;
     this->robot.quat.y = info->pose.pose.orientation.y;
     this->robot.quat.z = info->pose.pose.orientation.z;
     this->robot.quat.w = info->pose.pose.orientation.w;
-}
+
+    geometry_msgs::msg::TransformStamped WorldToBaseFootPrint;
+    try {
+        WorldToBaseFootPrint = TfBuffer->lookupTransform("robot_" + robot.id + "_base_footprint", "world", tf2::TimePointZero);
+        RCLCPP_INFO(this->get_logger(), "ODOM TF. %f, %f, %f, %f", info->pose.pose.position.x, info->pose.pose.position.y, WorldToBaseFootPrint.transform.translation.x, WorldToBaseFootPrint.transform.translation.y);
+        this->robot.coor.x = WorldToBaseFootPrint.transform.translation.x;
+        this->robot.coor.y = WorldToBaseFootPrint.transform.translation.y;
+    }
+    catch(const tf2::TransformException &error) {
+        this->robot.coor.x = info->pose.pose.position.x;
+        this->robot.coor.y = info->pose.pose.position.y;
+        RCLCPP_ERROR(this->get_logger(), "TF Exception: %s", error.what());
+        return;
+    }
+}       
 
 void RobotNode::CheckCollision(const sensor_msgs::msg::LaserScan::SharedPtr info)
 {
@@ -80,7 +91,7 @@ void RobotNode::CheckCollision(const sensor_msgs::msg::LaserScan::SharedPtr info
     // calculate is checked
     int CollisionWarnLevel = 0;     // 0 safe; 1 warn; 2 error
     for (int i = IndexMin; i < IndexMax; i++) {
-        if (info->ranges[i] > info->range_min && info->ranges[i] < info->range_min + 3 * COLLISION_RANGE) {
+        if (info->ranges[i] > info->range_min && info->ranges[i] < info->range_min + 2 * COLLISION_RANGE) {
             CollisionWarnLevel = 1;
         }
         if (info->ranges[i] > info->range_min && info->ranges[i] < info->range_min + COLLISION_RANGE) {
@@ -154,16 +165,19 @@ void RobotNode::UpdatePathInfo()
     if (CalDistance(CoorTrans(this->robot.coor,this->robot.tf), this->path.second[0]) < 5 * PRECISION_2) {
         this->path.second.erase(this->path.second.begin());
         if (this->path.second.empty()) {
-            geometry_msgs::msg::Twist info; 
-            info.angular.z = 0;
-            info.linear.x = 0;
-            info.linear.y = 0;
-            this->PublisherMotionControl->publish(info);
-
             this->robot.state = WAIT;
             this->StateChangeTimer->reset();
         }
     }
+}
+
+void RobotNode::PubStopControl()
+{
+    geometry_msgs::msg::Twist info; 
+    info.angular.z = 0;
+    info.linear.x = 0;
+    info.linear.y = 0;
+    this->PublisherMotionControl->publish(info);
 }
 
 void RobotNode::CheckState()
@@ -175,6 +189,10 @@ void RobotNode::CheckState()
     if (this->robot.state == WORK) {
         this->UpdatePathInfo();
         this->PubMotionControl();   
+    }
+
+    if (this->robot.state == WAIT) {
+        this->PubStopControl();
     }
 }
 

@@ -10,7 +10,7 @@ options = {
   odom_frame = "odom",                          -- odom坐标系
   provide_odom_frame = true,                    -- 
   publish_frame_projected_to_2d = true,         -- 发布2D位姿
-  use_odometry = false,                         -- 
+  use_odometry = true,                          -- 
   use_nav_sat = false,                          -- 不使用GPS数据
   use_landmarks = false,                        -- 不使用地标数据
   num_laser_scans = 1,                          -- 雷达数量
@@ -38,5 +38,6 @@ TRAJECTORY_BUILDER_2D.motion_filter.max_angle_radians = math.rad(0.1) -- 运动�
 POSE_GRAPH.constraint_builder.min_score = 0.65  -- 地图回环置信度(约束构建器最小分数)
 POSE_GRAPH.constraint_builder.global_localization_min_score = 0.7     -- 全局定位最小分数
 POSE_GRAPH.optimize_every_n_nodes = 0           -- 全局优化频率(每n个节点)
+POSE_GRAPH.constraint_builder.sampling_ratio = 0.4
 
 return options

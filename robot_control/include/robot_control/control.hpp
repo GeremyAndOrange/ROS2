@@ -30,6 +30,7 @@ private:
 private:
     void CheckCollision(const sensor_msgs::msg::LaserScan::SharedPtr info);
     void PubMotionControl();
+    void PubStopControl();
 
 private:
     void SubOdomInfo(const nav_msgs::msg::Odometry::SharedPtr info);

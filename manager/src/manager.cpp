@@ -261,9 +261,9 @@ void ManagerNode::ExpansionMap()
     for (size_t y = 0; y < height; y++) {
         for (size_t x = 0; x < width; x++) {
             if (this->StoredMap.data[y * width + x] > 65) {
-                for (int dy = -1.5 * ExpansionRadius; dy <= 1.5 * ExpansionRadius; ++dy) {
-                    for (int dx = -1.5 * ExpansionRadius; dx <= 1.5 * ExpansionRadius; ++dx) {
-                        if (this->StoredMap.data[(y+dy) * width + (x+dx)] < 65) {
+                for (int dy = -2 * ExpansionRadius; dy <= 2 * ExpansionRadius; ++dy) {
+                    for (int dx = -2 * ExpansionRadius; dx <= 2 * ExpansionRadius; ++dx) {
+                        if (this->StoredMap.data[(y+dy) * width + (x+dx)] <= 65) {
                             if ((x+dx) > 0 && (x+dx) < width && (y+dy) > 0 && (y+dy) < height) {
                                 this->ExpansionedMap.data[(y+dy) * width + (x+dx)] = 75;
                             }
@@ -285,7 +285,7 @@ bool ManagerNode::ScanBoundary(Coordinate PointInMap, std::vector<Coordinate>& B
     srand(static_cast<unsigned int>(time(nullptr)));
 
     int StepSize = int(std::round(RRT_STEP_SIZE / this->ExpansionedMap.info.resolution));
-    int MaxIteration = 6 * int(std::round((this->ExpansionedMap.info.width / StepSize))) * int(std::round((this->ExpansionedMap.info.height / StepSize)));
+    int MaxIteration = 5 * int(std::round((this->ExpansionedMap.info.width / StepSize))) * int(std::round((this->ExpansionedMap.info.height / StepSize)));
     for (int i = 0; i < MaxIteration; i++) {
         Coordinate RandomPoint = GenerateRandomNode();
         Coordinate NearestPoint = RRTree[0];
