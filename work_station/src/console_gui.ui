@@ -114,6 +114,19 @@ p, li { white-space: pre-wrap; }
      <string>Start System</string>
     </property>
    </widget>
+   <widget class="QCheckBox" name="CheckGui">
+    <property name="geometry">
+     <rect>
+      <x>160</x>
+      <y>400</y>
+      <width>92</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Open GUI</string>
+    </property>
+   </widget>
   </widget>
  </widget>
  <resources/>

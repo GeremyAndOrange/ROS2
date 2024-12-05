@@ -16,14 +16,15 @@ ConsoleGui::~ConsoleGui()
 
 void ConsoleGui::OnSystemStartClicked()
 {
+    std::string IsGuiOPen = ui.CheckGui->isChecked() ? "true" : "false";
     // start manager/gazebo/global_map
-    std::string manager_command = "ros2 launch robot_description environment.launch.py &";
+    std::string manager_command = "ros2 launch robot_description environment.launch.py gui_open:=" + IsGuiOPen + " &";
     std::system(manager_command.c_str());
     
     int RobotNumber = ui.RobotNumber->toPlainText().toInt();
     for (int i = 0; i < RobotNumber; i++) {
         // update urdf file
-        std::string urdf_command = "ros2 launch robot_description config.launch.py robot_name:=robot_" + std::to_string(i);
+        std::string urdf_command = "ros2 launch robot_description config.launch.py robot_name:=robot_" + std::to_string(i) + " &";
         std::system(urdf_command.c_str());
 
         // wait 1 senconds

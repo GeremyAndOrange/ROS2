@@ -25,6 +25,7 @@ void RobotNode::InitialVariable()
     // topic
     this->PublisherMotionControl = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
     this->PublisherPathPoints = this->create_publisher<visualization_msgs::msg::Marker>("path_points", 10);
+    this->PublisherCartoOdom = this->create_publisher<nav_msgs::msg::Odometry>("carto_odom", 10);
     this->SubscriptionOdomInfo = this->create_subscription<nav_msgs::msg::Odometry>("odom",10,std::bind(&RobotNode::SubOdomInfo,this,_1));
     this->SubscriptionLaserInfo = this->create_subscription<sensor_msgs::msg::LaserScan>("scan",10,std::bind(&RobotNode::CheckCollision,this,_1));
 
@@ -32,6 +33,7 @@ void RobotNode::InitialVariable()
     this->CheckStateTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::CheckState,this));
     this->StateChangeTimer = this->create_wall_timer(std::chrono::seconds(3), std::bind(&RobotNode::StateChange,this));
     this->TfTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::TfBroadcast,this));
+    this->CartoOdomTimer = this->create_wall_timer(std::chrono::milliseconds(40),std::bind(&RobotNode::PubCartoOdomInfo,this));
 }
 
 void RobotNode::GetParameter()
@@ -45,26 +47,49 @@ void RobotNode::GetParameter()
     this->robot.tf.y = this->get_parameter("origin_y").as_double();
 }
 
-void RobotNode::SubOdomInfo(const nav_msgs::msg::Odometry::SharedPtr info)
+void RobotNode::PubCartoOdomInfo()
 {
-    this->robot.quat.x = info->pose.pose.orientation.x;
-    this->robot.quat.y = info->pose.pose.orientation.y;
-    this->robot.quat.z = info->pose.pose.orientation.z;
-    this->robot.quat.w = info->pose.pose.orientation.w;
-
-    geometry_msgs::msg::TransformStamped WorldToBaseFootPrint;
+    geometry_msgs::msg::TransformStamped BaseFootPrintToOdom;
     try {
-        WorldToBaseFootPrint = TfBuffer->lookupTransform("robot_" + robot.id + "_base_footprint", "world", tf2::TimePointZero);
-        RCLCPP_INFO(this->get_logger(), "ODOM TF. %f, %f, %f, %f", info->pose.pose.position.x, info->pose.pose.position.y, WorldToBaseFootPrint.transform.translation.x, WorldToBaseFootPrint.transform.translation.y);
-        this->robot.coor.x = WorldToBaseFootPrint.transform.translation.x;
-        this->robot.coor.y = WorldToBaseFootPrint.transform.translation.y;
+        BaseFootPrintToOdom = TfBuffer->lookupTransform("robot_" + robot.id + "_odom", "robot_" + robot.id + "_base_footprint", tf2::TimePointZero);
+        this->robot.coor.x = BaseFootPrintToOdom.transform.translation.x;
+        this->robot.coor.y = BaseFootPrintToOdom.transform.translation.y;
+
+        this->robot.quat.x = BaseFootPrintToOdom.transform.rotation.x;
+        this->robot.quat.y = BaseFootPrintToOdom.transform.rotation.y;
+        this->robot.quat.z = BaseFootPrintToOdom.transform.rotation.z;
+        this->robot.quat.w = BaseFootPrintToOdom.transform.rotation.w;
+        
+        nav_msgs::msg::Odometry info;
+        info.pose.pose.position.x = BaseFootPrintToOdom.transform.translation.x;
+        info.pose.pose.position.y = BaseFootPrintToOdom.transform.translation.y;
+
+        info.pose.pose.orientation.x = BaseFootPrintToOdom.transform.rotation.x;
+        info.pose.pose.orientation.y = BaseFootPrintToOdom.transform.rotation.y;
+        info.pose.pose.orientation.z = BaseFootPrintToOdom.transform.rotation.z;
+        info.pose.pose.orientation.w = BaseFootPrintToOdom.transform.rotation.w;
+
+        info.header.stamp = this->get_clock()->now();
+        info.header.frame_id = "robot_" + robot.id + "_carto_odom";
+        info.child_frame_id = "robot_" + robot.id + "_base_footprint";
+        this->PublisherCartoOdom->publish(info);
     }
     catch(const tf2::TransformException &error) {
-        this->robot.coor.x = info->pose.pose.position.x;
-        this->robot.coor.y = info->pose.pose.position.y;
         RCLCPP_ERROR(this->get_logger(), "TF Exception: %s", error.what());
         return;
     }
+}
+
+void RobotNode::SubOdomInfo(const nav_msgs::msg::Odometry::SharedPtr info)
+{
+    if (info) return;
+    // this->robot.coor.x = info->pose.pose.position.x;
+    // this->robot.coor.y = info->pose.pose.position.y;
+    
+    // this->robot.quat.x = info->pose.pose.orientation.x;
+    // this->robot.quat.y = info->pose.pose.orientation.y;
+    // this->robot.quat.z = info->pose.pose.orientation.z;
+    // this->robot.quat.w = info->pose.pose.orientation.w;
 }       
 
 void RobotNode::CheckCollision(const sensor_msgs::msg::LaserScan::SharedPtr info)
