@@ -72,7 +72,7 @@ def generate_launch_description():
         arguments = [
             '-configuration_directory', cartographer_share,
             '-configuration_basename', cartohrapher_config,
-            '-minloglevel', '2'
+            '-minloglevel', '1'
         ],
         parameters = [
             {'use_sim_time': True}

@@ -68,7 +68,7 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
     catch(const tf2::TransformException &error) {
         response->path = {};
         response->is_path = false;
-        RCLCPP_ERROR(this->get_logger(), "TF Exception: %s", error.what());
+        RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "TF Exception: %s", error.what());
         return;
     }
 
@@ -142,7 +142,6 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
                 double MinDist = std::numeric_limits<double>::max();
                 for (const auto& task : TaskPoints) {
                     double dist = CalDistance(robot.coor, task);
-                    RCLCPP_INFO(this->get_logger(), "TASK POINT %f, %f, %f.", task.x, task.y, dist);
                     if (dist < MinDist) {
                         TargetPoint = task;                                 // coordinate in map
                         MinDist = dist;
@@ -159,7 +158,6 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
                     }
                 }
             }
-            RCLCPP_INFO(this->get_logger(), "TASK POINT %f, %f.", TargetPoint.x, TargetPoint.y);
 
             if (bRets) {
                 visualization_msgs::msg::Marker TargetMarker;
@@ -225,19 +223,19 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
                 response->path = target_path;
             }
             else {
-                RCLCPP_ERROR(this->get_logger(), "NO PATH.");
+                RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "NO PATH.");
                 response->is_path = false;
                 response->path = {};
             }
         }
         else {
-            RCLCPP_ERROR(this->get_logger(), "NO CALCULATE TASK POINTS.");
+            RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "NO CALCULATE TASK POINTS.");
             response->is_path = false;
             response->path = {};
         }
     }   
     else {
-        RCLCPP_ERROR(this->get_logger(), "NO SCAN BOUNDARY.");
+        RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "NO SCAN BOUNDARY.");
         response->is_path = false;
         response->path = {};
     }

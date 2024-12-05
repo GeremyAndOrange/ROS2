@@ -75,7 +75,7 @@ void RobotNode::PubCartoOdomInfo()
         this->PublisherCartoOdom->publish(info);
     }
     catch(const tf2::TransformException &error) {
-        RCLCPP_ERROR(this->get_logger(), "TF Exception: %s", error.what());
+        RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "TF Exception: %s", error.what());
         return;
     }
 }
@@ -104,7 +104,7 @@ void RobotNode::CheckCollision(const sensor_msgs::msg::LaserScan::SharedPtr info
         GetRPY(quaternion, &LaserDeg);
     }
     catch(const tf2::TransformException &error) {
-        RCLCPP_ERROR(this->get_logger(), "TF Exception: %s", error.what());
+        RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "TF Exception: %s", error.what());
         return;
     }
 
@@ -120,7 +120,7 @@ void RobotNode::CheckCollision(const sensor_msgs::msg::LaserScan::SharedPtr info
             CollisionWarnLevel = 1;
         }
         if (info->ranges[i] > info->range_min && info->ranges[i] < info->range_min + COLLISION_RANGE) {
-            RCLCPP_INFO(this->get_logger(), "IMMEDIATELY COLLIDE, DISTANCE %f.", info->ranges[i]);
+            RCLCPP_INFO_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "IMMEDIATELY COLLIDE, DISTANCE %f.", info->ranges[i]);
             CollisionWarnLevel = 2;
             break;
         }
@@ -146,7 +146,6 @@ void RobotNode::CheckCollision(const sensor_msgs::msg::LaserScan::SharedPtr info
 
 void RobotNode::PubMotionControl()
 {
-    // RCLCPP_ERROR(this->get_logger(), "RIGHT NOW TARGET POINT IS %f, %f.", this->path[0].x, this->path[0].y);
     CmlSpeed speed;
     CalSpeed(CoorTrans(this->robot.coor,this->robot.tf),this->path.second[0],this->robot.quat,&speed);
     geometry_msgs::msg::Twist info;
@@ -304,6 +303,6 @@ void RobotNode::TfPoint(const geometry_msgs::msg::PointStamped& point, geometry_
         TfBuffer->transform(point,TransformedPoint,"world");
     }
     catch(const tf2::TransformException &error) {
-        RCLCPP_ERROR(this->get_logger(), "TF Exception: %s", error.what());
+        RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "TF Exception: %s", error.what());
     }
 }

@@ -117,14 +117,30 @@ p, li { white-space: pre-wrap; }
    <widget class="QCheckBox" name="CheckGui">
     <property name="geometry">
      <rect>
-      <x>160</x>
+      <x>150</x>
       <y>400</y>
-      <width>92</width>
+      <width>111</width>
       <height>23</height>
      </rect>
     </property>
     <property name="text">
      <string>Open GUI</string>
+    </property>
+   </widget>
+   <widget class="QCheckBox" name="CheckRviz">
+    <property name="geometry">
+     <rect>
+      <x>150</x>
+      <y>430</y>
+      <width>111</width>
+      <height>23</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Open RVIZ2</string>
+    </property>
+    <property name="checked">
+     <bool>true</bool>
     </property>
    </widget>
   </widget>

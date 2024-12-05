@@ -16,9 +16,11 @@ ConsoleGui::~ConsoleGui()
 
 void ConsoleGui::OnSystemStartClicked()
 {
-    std::string IsGuiOPen = ui.CheckGui->isChecked() ? "true" : "false";
+    std::string IsGuiOpen = ui.CheckGui->isChecked() ? "true" : "false";
+    std::string IsRvizOpen = ui.CheckRviz->isChecked() ? "true" : "false";
     // start manager/gazebo/global_map
-    std::string manager_command = "ros2 launch robot_description environment.launch.py gui_open:=" + IsGuiOPen + " &";
+    std::string manager_command = " ros2 launch robot_description environment.launch.py gui_open:=" + IsGuiOpen 
+                                + " rviz_open:=" + IsRvizOpen + " &";
     std::system(manager_command.c_str());
     
     int RobotNumber = ui.RobotNumber->toPlainText().toInt();
