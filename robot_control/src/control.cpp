@@ -30,7 +30,7 @@ void RobotNode::InitialVariable()
 
     // timer
     this->CheckStateTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::CheckState,this));
-    this->StateChangeTimer = this->create_wall_timer(std::chrono::seconds(1), std::bind(&RobotNode::StateChange,this));
+    this->StateChangeTimer = this->create_wall_timer(std::chrono::seconds(2), std::bind(&RobotNode::StateChange,this));
     this->TfTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::TfBroadcast,this));
 }
 
@@ -160,7 +160,8 @@ void RobotNode::UpdatePathInfo()
             info.linear.y = 0;
             this->PublisherMotionControl->publish(info);
 
-            this->robot.state = RELAX;
+            this->robot.state = WAIT;
+            this->StateChangeTimer->reset();
         }
     }
 }
