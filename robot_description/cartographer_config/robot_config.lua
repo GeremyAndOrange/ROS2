@@ -6,9 +6,9 @@ options = {
   trajectory_builder = TRAJECTORY_BUILDER,
   map_frame = "submap",                         -- 全局坐标系
   tracking_frame = "base_footprint",            -- 自身坐标系
-  published_frame = "base_footprint",           -- robot到map的tf转换
+  published_frame = "odom",                     -- odom到map的tf转换
   odom_frame = "odom",                          -- odom坐标系
-  provide_odom_frame = true,                    -- 
+  provide_odom_frame = false,                   -- 
   publish_frame_projected_to_2d = true,         -- 发布2D位姿
   use_odometry = true,                          -- 
   use_nav_sat = false,                          -- 不使用GPS数据
@@ -35,9 +35,9 @@ TRAJECTORY_BUILDER_2D.missing_data_ray_length = 3.                    -- 缺失�
 TRAJECTORY_BUILDER_2D.use_imu_data = true       -- 使用IMU数据
 TRAJECTORY_BUILDER_2D.use_online_correlative_scan_matching = true     -- 使用扫描匹配
 TRAJECTORY_BUILDER_2D.motion_filter.max_angle_radians = math.rad(0.1) -- 运动滤波器最大角度
-POSE_GRAPH.constraint_builder.min_score = 0.65  -- 地图回环置信度(约束构建器最小分数)
-POSE_GRAPH.constraint_builder.global_localization_min_score = 0.7     -- 全局定位最小分数
-POSE_GRAPH.optimize_every_n_nodes = 0           -- 全局优化频率(每n个节点)
+POSE_GRAPH.constraint_builder.min_score = 0.75  -- 地图回环置信度(约束构建器最小分数)
+POSE_GRAPH.constraint_builder.global_localization_min_score = 0.8     -- 全局定位最小分数
+POSE_GRAPH.optimize_every_n_nodes = 100         -- 全局优化频率(每n个节点)
 POSE_GRAPH.constraint_builder.sampling_ratio = 0.4
 
 return options

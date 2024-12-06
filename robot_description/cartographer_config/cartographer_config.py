@@ -8,8 +8,8 @@ def cartographer_config(robot_name, original_file, new_file):
                 file.write(f'  map_frame = "{robot_name}_submap",\n')
             elif 'tracking_frame = "base_footprint"' in line:
                 file.write(f'  tracking_frame = "{robot_name}_base_footprint",\n')
-            elif 'published_frame = "base_footprint"' in line:
-                file.write(f'  published_frame = "{robot_name}_base_footprint",\n')
+            elif 'published_frame = "odom"' in line:
+                file.write(f'  published_frame = "{robot_name}_odom",\n')
             elif 'odom_frame = "odom"' in line:
                 file.write(f'  odom_frame = "{robot_name}_odom",\n')
             else:

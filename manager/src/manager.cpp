@@ -45,32 +45,15 @@ void ManagerNode::SendTask(const interfaces::srv::GetTask::Request::SharedPtr re
     // calculate expansion map
     ExpansionMap();
 
-    // odom -> world
+    // coordinate in map
+    Coordinate PositionInMap;
+    PositionInMap.x = robot.coor.x - this->ExpansionedMap.info.origin.position.x;
+    PositionInMap.y = robot.coor.y - this->ExpansionedMap.info.origin.position.y;
+    
+    // coordinate index relative origin
     Coordinate PointInMap;
-    geometry_msgs::msg::TransformStamped OdomToWorld;
-    try {
-        OdomToWorld = TfBuffer->lookupTransform("world", "robot_" + robot.id + "_odom", tf2::TimePointZero);
-        
-        // coordinate in world
-        Coordinate PositionInWorld;
-        PositionInWorld.x = robot.coor.x + OdomToWorld.transform.translation.x;
-        PositionInWorld.y = robot.coor.y + OdomToWorld.transform.translation.y;
-
-        // coordinate in map
-        Coordinate PositionInMap;
-        PositionInMap.x = PositionInWorld.x - this->ExpansionedMap.info.origin.position.x;
-        PositionInMap.y = PositionInWorld.y - this->ExpansionedMap.info.origin.position.y;
-        
-        // coordinate index relative origin
-        PointInMap.x = std::round(PositionInMap.x / this->ExpansionedMap.info.resolution);
-        PointInMap.y = std::round(PositionInMap.y / this->ExpansionedMap.info.resolution);
-    }
-    catch(const tf2::TransformException &error) {
-        response->path = {};
-        response->is_path = false;
-        RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "TF Exception: %s", error.what());
-        return;
-    }
+    PointInMap.x = std::round(PositionInMap.x / this->ExpansionedMap.info.resolution);
+    PointInMap.y = std::round(PositionInMap.y / this->ExpansionedMap.info.resolution);
 
     // calculate task points
     bool bRets = false;
@@ -263,7 +246,12 @@ void ManagerNode::ExpansionMap()
                     for (int dx = -2 * ExpansionRadius; dx <= 2 * ExpansionRadius; ++dx) {
                         if (this->StoredMap.data[(y+dy) * width + (x+dx)] <= 65 && this->StoredMap.data[(y+dy) * width + (x+dx)] != -1) {
                             if ((x+dx) > 0 && (x+dx) < width && (y+dy) > 0 && (y+dy) < height) {
-                                this->ExpansionedMap.data[(y+dy) * width + (x+dx)] = 75;
+                                if (std::abs(dx) <= ExpansionRadius && std::abs(dy) <= ExpansionRadius) {
+                                    this->ExpansionedMap.data[(y+dy) * width + (x+dx)] = 85;
+                                }
+                                else if (this->ExpansionedMap.data[(y+dy) * width + (x+dx)] != 85) {
+                                    this->ExpansionedMap.data[(y+dy) * width + (x+dx)] = 75;
+                                }
                             }
                         }
                     }
@@ -278,7 +266,7 @@ void ManagerNode::ExpansionMap()
 bool ManagerNode::ScanBoundary(Coordinate PointInMap, std::vector<Coordinate>& BoundaryPoints)
 {
     int IterationCoff = 1;
-    while (IterationCoff <= 5) {
+    while (IterationCoff <= 10) {
         // find boundary
         std::vector<Coordinate> RRTree;
         RRTree.push_back(PointInMap);    
@@ -303,7 +291,7 @@ bool ManagerNode::ScanBoundary(Coordinate PointInMap, std::vector<Coordinate>& B
                 int MapValue = this->ExpansionedMap.data[int(NearestPoint.y) * this->ExpansionedMap.info.width + (NearestPoint.x)];
                 if (MapValue != -1) {
                     RRTree.push_back(NewPoint);
-                    if (this->ExpansionedMap.data[int(NewPoint.y) * this->ExpansionedMap.info.width + int(NewPoint.x)] == -1  && MapValue != 75) {
+                    if (this->ExpansionedMap.data[int(NewPoint.y) * this->ExpansionedMap.info.width + int(NewPoint.x)] == -1  && MapValue != 85) {
                         BoundaryPoints.push_back(NewPoint); 
                     }
                 }
@@ -328,7 +316,7 @@ bool ManagerNode::IsValidPoint(Coordinate point)
 
     uint32_t x = uint32_t(point.x);
     uint32_t y = uint32_t(point.y);
-    return  x < width && y < height && (this->ExpansionedMap.data[y * width + x] <= 65 || this->ExpansionedMap.data[y * width + x] == 75);
+    return  x < width && y < height && (this->ExpansionedMap.data[y * width + x] <= 65 || this->ExpansionedMap.data[y * width + x] == 75 || this->ExpansionedMap.data[y * width + x] == 85);
 }
 
 Coordinate ManagerNode::GenerateRandomNode()
@@ -459,7 +447,7 @@ bool ManagerNode::DijsktraAlgorithm(Coordinate SourcePoint, Coordinate TargetPoi
             if (neighbor.x >= 0 && neighbor.x < width && neighbor.y >= 0 && neighbor.y < height) {
                 // skip used node and obstacle
                 if (!visited[int(neighbor.x)][int(neighbor.y)] && (this->ExpansionedMap.data[neighbor.y * width + neighbor.x] <= 65 || this->ExpansionedMap.data[neighbor.y * width + neighbor.x] == 75)) {
-                    double newDist = distances[int(current.x)][int(current.y)] + 1 + (this->ExpansionedMap.data[neighbor.y * width + neighbor.x] == 75 ? 100 : 0);
+                    double newDist = distances[int(current.x)][int(current.y)] + 1 + (this->ExpansionedMap.data[neighbor.y * width + neighbor.x] == 75 ? 10 : 0);
                     if (newDist < distances[neighbor.x][neighbor.y]) {
                         distances[int(neighbor.x)][int(neighbor.y)] = newDist;
                         parents[int(neighbor.x)][int(neighbor.y)] = current;

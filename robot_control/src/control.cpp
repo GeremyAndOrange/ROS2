@@ -25,15 +25,14 @@ void RobotNode::InitialVariable()
     // topic
     this->PublisherMotionControl = this->create_publisher<geometry_msgs::msg::Twist>("cmd_vel", 10);
     this->PublisherPathPoints = this->create_publisher<visualization_msgs::msg::Marker>("path_points", 10);
-    this->PublisherCartoOdom = this->create_publisher<nav_msgs::msg::Odometry>("carto_odom", 10);
     this->SubscriptionOdomInfo = this->create_subscription<nav_msgs::msg::Odometry>("odom",10,std::bind(&RobotNode::SubOdomInfo,this,_1));
     this->SubscriptionLaserInfo = this->create_subscription<sensor_msgs::msg::LaserScan>("scan",10,std::bind(&RobotNode::CheckCollision,this,_1));
 
     // timer
     this->CheckStateTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::CheckState,this));
     this->StateChangeTimer = this->create_wall_timer(std::chrono::seconds(3), std::bind(&RobotNode::StateChange,this));
-    this->TfTimer = this->create_wall_timer(std::chrono::milliseconds(50),std::bind(&RobotNode::TfBroadcast,this));
-    this->CartoOdomTimer = this->create_wall_timer(std::chrono::milliseconds(40),std::bind(&RobotNode::PubCartoOdomInfo,this));
+    this->TfTimer = this->create_wall_timer(std::chrono::milliseconds(20),std::bind(&RobotNode::TfBroadcast,this));
+    this->CartoCoorTimer = this->create_wall_timer(std::chrono::milliseconds(40),std::bind(&RobotNode::GetCoorInfo,this));
 }
 
 void RobotNode::GetParameter()
@@ -47,32 +46,19 @@ void RobotNode::GetParameter()
     this->robot.tf.y = this->get_parameter("origin_y").as_double();
 }
 
-void RobotNode::PubCartoOdomInfo()
+void RobotNode::GetCoorInfo()
 {
-    geometry_msgs::msg::TransformStamped BaseFootPrintToOdom;
+    geometry_msgs::msg::TransformStamped BaseFootPrintToWorld;
     try {
-        BaseFootPrintToOdom = TfBuffer->lookupTransform("robot_" + robot.id + "_odom", "robot_" + robot.id + "_base_footprint", tf2::TimePointZero);
-        this->robot.coor.x = BaseFootPrintToOdom.transform.translation.x;
-        this->robot.coor.y = BaseFootPrintToOdom.transform.translation.y;
+        BaseFootPrintToWorld = TfBuffer->lookupTransform("world", "robot_" + robot.id + "_base_footprint", tf2::TimePointZero);
 
-        this->robot.quat.x = BaseFootPrintToOdom.transform.rotation.x;
-        this->robot.quat.y = BaseFootPrintToOdom.transform.rotation.y;
-        this->robot.quat.z = BaseFootPrintToOdom.transform.rotation.z;
-        this->robot.quat.w = BaseFootPrintToOdom.transform.rotation.w;
-        
-        nav_msgs::msg::Odometry info;
-        info.pose.pose.position.x = BaseFootPrintToOdom.transform.translation.x;
-        info.pose.pose.position.y = BaseFootPrintToOdom.transform.translation.y;
+        this->robot.coor.x = BaseFootPrintToWorld.transform.translation.x;
+        this->robot.coor.y = BaseFootPrintToWorld.transform.translation.y;
 
-        info.pose.pose.orientation.x = BaseFootPrintToOdom.transform.rotation.x;
-        info.pose.pose.orientation.y = BaseFootPrintToOdom.transform.rotation.y;
-        info.pose.pose.orientation.z = BaseFootPrintToOdom.transform.rotation.z;
-        info.pose.pose.orientation.w = BaseFootPrintToOdom.transform.rotation.w;
-
-        info.header.stamp = this->get_clock()->now();
-        info.header.frame_id = "robot_" + robot.id + "_carto_odom";
-        info.child_frame_id = "robot_" + robot.id + "_base_footprint";
-        this->PublisherCartoOdom->publish(info);
+        this->robot.quat.x = BaseFootPrintToWorld.transform.rotation.x;
+        this->robot.quat.y = BaseFootPrintToWorld.transform.rotation.y;
+        this->robot.quat.z = BaseFootPrintToWorld.transform.rotation.z;
+        this->robot.quat.w = BaseFootPrintToWorld.transform.rotation.w;
     }
     catch(const tf2::TransformException &error) {
         RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "TF Exception: %s", error.what());
@@ -280,13 +266,22 @@ Coordinate RobotNode::CoorTrans(Coordinate self, Coordinate tf)
 
 void RobotNode::TfBroadcast()
 {
+    geometry_msgs::msg::TransformStamped OdomToSubmap;
+    try {
+        OdomToSubmap = TfBuffer->lookupTransform("robot_" + robot.id + "_submap", "robot_" + robot.id + "_odom", tf2::TimePointZero);
+    }
+    catch(const tf2::TransformException &error) {
+        RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "TF Exception: %s", error.what());
+        return;
+    }
+
     geometry_msgs::msg::TransformStamped WorldToSubmap;
     WorldToSubmap.header.frame_id = "world";
     WorldToSubmap.child_frame_id = "robot_" + this->robot.id + "_submap";
     WorldToSubmap.header.stamp = this->get_clock()->now();
 
-    WorldToSubmap.transform.translation.x = -this->robot.tf.x;
-    WorldToSubmap.transform.translation.y = -this->robot.tf.y;
+    WorldToSubmap.transform.translation.x = -this->robot.tf.x - OdomToSubmap.transform.translation.x;
+    WorldToSubmap.transform.translation.y = -this->robot.tf.y - OdomToSubmap.transform.translation.y;
     WorldToSubmap.transform.translation.z = 0.0;
 
     WorldToSubmap.transform.rotation.x = 0.0;

@@ -31,7 +31,7 @@ private:
     void CheckCollision(const sensor_msgs::msg::LaserScan::SharedPtr info);
     void PubMotionControl();
     void PubStopControl();
-    void PubCartoOdomInfo();
+    void GetCoorInfo();
 
 private:
     void SubOdomInfo(const nav_msgs::msg::Odometry::SharedPtr info);
@@ -52,7 +52,6 @@ private:
     // topic
     rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr PublisherMotionControl;
     rclcpp::Publisher<visualization_msgs::msg::Marker>::SharedPtr PublisherPathPoints;
-    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr PublisherCartoOdom;
     rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr SubscriptionOdomInfo;
     rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr SubscriptionLaserInfo;
 
@@ -60,7 +59,7 @@ private:
     rclcpp::TimerBase::SharedPtr CheckStateTimer;
     rclcpp::TimerBase::SharedPtr StateChangeTimer;
     rclcpp::TimerBase::SharedPtr TfTimer;
-    rclcpp::TimerBase::SharedPtr CartoOdomTimer;
+    rclcpp::TimerBase::SharedPtr CartoCoorTimer;
 };
 
 #endif
