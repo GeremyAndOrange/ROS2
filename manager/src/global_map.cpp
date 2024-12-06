@@ -43,6 +43,21 @@ void GlobalMap::PubMap()
 
     TransformMap = this->StoredMap;
     TransformMap.header.frame_id = "world";
+    try {
+        geometry_msgs::msg::TransformStamped WorldToSubmap;
+        WorldToSubmap = TfBuffer->lookupTransform("world", this->StoredMap.header.frame_id, tf2::TimePointZero);
+
+        TransformMap.info.origin.position.x = this->StoredMap.info.origin.position.x + WorldToSubmap.transform.translation.x;
+        TransformMap.info.origin.position.y = this->StoredMap.info.origin.position.y + WorldToSubmap.transform.translation.y;
+        TransformMap.info.origin.orientation.x = this->StoredMap.info.origin.orientation.x + WorldToSubmap.transform.rotation.x;
+        TransformMap.info.origin.orientation.y = this->StoredMap.info.origin.orientation.y + WorldToSubmap.transform.rotation.y;
+        TransformMap.info.origin.orientation.z = this->StoredMap.info.origin.orientation.z + WorldToSubmap.transform.rotation.z;
+        TransformMap.info.origin.orientation.w = this->StoredMap.info.origin.orientation.w + WorldToSubmap.transform.rotation.w;
+    }
+    catch(const tf2::TransformException &error) {
+        RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 1000, "TF Exception: %s", error.what());
+        return;
+    }
 
     this->PublisherGlobalMap->publish(TransformMap);
 }
